@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Romero_AndresIMDBAPP</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="menu_peliculas">Top 10</string>
+    <string name="menu_favoritas">Favoritas</string>
+    <string name="menu_buscador">Buscar Película</string>
+    <string name="default_web_client_id">1086900165591-b7munblo1a61fp41ih5hu9t8r3b9jk84.apps.googleusercontent.com</string>
+    <string name="sign_in">Sign In</string>
+    <string name="facebook_app_id">608688345087399</string>
+    <string name="fb_login_protocol_scheme">fb608688345087399</string>
+</resources>

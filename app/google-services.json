@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1086900165591",
+    "project_id": "romeroandresimdbappp",
+    "storage_bucket": "romeroandresimdbappp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1086900165591:android:ac91d30ff0b12c16de4992",
+        "android_client_info": {
+          "package_name": "com.example.romero_andresimdbappp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1086900165591-b7munblo1a61fp41ih5hu9t8r3b9jk84.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.romero_andresimdbappp",
+            "certificate_hash": "9b9520e80159316d50433b873e78fa7f8af57ef6"
+          }
+        },
+        {
+          "client_id": "1086900165591-u9lbtbhpjf0tgisq9d6eqn1797ij9u8r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.romero_andresimdbappp",
+            "certificate_hash": "7d3e6cef08dcea65fb3169d0c42986f42be4e607"
+          }
+        },
+        {
+          "client_id": "1086900165591-skrjliv70svn9i8kgb3d0l0d3k48bfd8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCy4ZGLZl9lZUW54fPwp0DsawtLFRGhheU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1086900165591-skrjliv70svn9i8kgb3d0l0d3k48bfd8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
