@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.firebase.database)
+    implementation(libs.firebase.firestore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -61,13 +62,11 @@ dependencies {
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-
     // Firebase
     implementation("com.google.firebase:firebase-auth:21.1.0")
-    implementation("com.google.firebase:firebase-bom:31.2.3")
-
     // Facebook SDK
     implementation("com.facebook.android:facebook-android-sdk:15.2.0")
     implementation ("com.github.bumptech.glide:glide:4.11.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.11.0")
+    implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
 }
