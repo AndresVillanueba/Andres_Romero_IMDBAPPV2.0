@@ -6,28 +6,21 @@
     android:padding="16dp"
     android:gravity="center_horizontal"
     android:background="@drawable/side_nav_bar">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="91dp"
-        android:gravity="start"
-        android:orientation="horizontal">
-        <ImageView
-            android:id="@+id/nav_icon"
-            android:layout_width="89dp"
-            android:layout_height="88dp"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="8dp"
-            android:contentDescription="IMDb_TMDb_Logo"
-            android:src="@drawable/ic_imdb_tmdb" />
-    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/nav_profile_image"
+        android:layout_width="100dp"
+        android:layout_height="141dp"
+        android:layout_marginBottom="8dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/default_user_image" />
 
     <TextView
         android:id="@+id/nav_header_initial"
         android:layout_width="109dp"
         android:layout_height="102dp"
-        android:layout_marginBottom="8dp"
         android:gravity="center"
+        android:text="U"
         android:textColor="@android:color/black"
         android:textSize="48sp" />
 
@@ -40,12 +33,6 @@
         android:textColor="@android:color/black"
         android:gravity="center" />
 
-    <com.google.android.gms.common.SignInButton
-        android:id="@+id/btn_google_sign_in"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
-
     <Button
         android:id="@+id/btn_google_sign_out"
         android:layout_width="wrap_content"
@@ -53,5 +40,4 @@
         android:text="Logout"
         android:layout_marginTop="16dp"
         android:visibility="gone" />
-
 </LinearLayout>

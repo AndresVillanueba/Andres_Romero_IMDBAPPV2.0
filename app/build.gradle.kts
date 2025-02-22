@@ -68,4 +68,6 @@ dependencies {
 
     // Facebook SDK
     implementation("com.facebook.android:facebook-android-sdk:15.2.0")
+    implementation ("com.github.bumptech.glide:glide:4.11.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.11.0")
 }
