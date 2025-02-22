@@ -1,8 +1,7 @@
 package com.example.romero_andresimdbappp.sync;
-
 import android.net.Uri;
 import android.util.Log;
-
+import com.example.romero_andresimdbappp.database.FavoritesDatabaseHelper;
 import com.example.romero_andresimdbappp.database.UsersDatabase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -15,8 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import com.example.romero_andresimdbappp.database.FavoritesDatabaseHelper;
-
 
 public class Userssync {
 
@@ -42,8 +39,8 @@ public class Userssync {
         db.collection("users")
                 .document(userId)
                 .set(userData, SetOptions.merge())
-                .addOnSuccessListener(aVoid -> Log.d("FirebaseUsersSync", "Usuario básico sincronizado."))
-                .addOnFailureListener(e -> Log.e("FirebaseUsersSync", "Error al sincronizar usuario: " + e.getMessage()));
+                .addOnSuccessListener(aVoid -> Log.d("Userssync", "Usuario sincronizado con Firestore."))
+                .addOnFailureListener(e -> Log.e("Userssync", "Error al sincronizar usuario: " + e.getMessage()));
     }
 
     public void syncCurrentUserToFirestore() {
@@ -62,9 +59,7 @@ public class Userssync {
             if (documentSnapshot.exists() && documentSnapshot.contains("activity_log")) {
                 activityLog = (List<Map<String, Object>>) documentSnapshot.get("activity_log");
                 for (Map<String, Object> entry : activityLog) {
-                    if (entry.get("login_time").equals(loginTime)) {
-                        return;
-                    }
+                    if (entry.get("login_time").equals(loginTime)) return;
                 }
             }
             Map<String, Object> newLog = new HashMap<>();
@@ -83,9 +78,9 @@ public class Userssync {
 
             db.collection("users").document(userId)
                     .set(userData)
-                    .addOnSuccessListener(aVoid -> Log.d("FirebaseUsersSync", "Usuario sincronizado."))
-                    .addOnFailureListener(e -> Log.e("FirebaseUsersSync", "Error al sincronizar usuario: " + e.getMessage()));
-        }).addOnFailureListener(e -> Log.e("FirebaseUsersSync", "Error al recuperar datos: " + e.getMessage()));
+                    .addOnSuccessListener(aVoid -> Log.d("Userssync", "Usuario sincronizado."))
+                    .addOnFailureListener(e -> Log.e("Userssync", "Error al sincronizar usuario: " + e.getMessage()));
+        }).addOnFailureListener(e -> Log.e("Userssync", "Error al recuperar datos: " + e.getMessage()));
     }
 
     public void updateLogoutTime() {
@@ -102,12 +97,12 @@ public class Userssync {
                         lastLogin.put("logout_time", logoutTime);
                         db.collection("users").document(userId)
                                 .update("activity_log", activityLog)
-                                .addOnSuccessListener(aVoid -> Log.d("FirebaseUsersSync", "Logout registrado."))
-                                .addOnFailureListener(e -> Log.e("FirebaseUsersSync", "Error logout: " + e.getMessage()));
+                                .addOnSuccessListener(aVoid -> Log.d("Userssync", "Logout registrado."))
+                                .addOnFailureListener(e -> Log.e("Userssync", "Error al registrar logout: " + e.getMessage()));
                     }
                 }
             }
-        }).addOnFailureListener(e -> Log.e("FirebaseUsersSync", "Error al obtener historial: " + e.getMessage()));
+        }).addOnFailureListener(e -> Log.e("Userssync", "Error al obtener historial: " + e.getMessage()));
     }
 
     public void syncUsersWithFirestore(UsersDatabase usersManager) {
@@ -149,7 +144,6 @@ public class Userssync {
                     usersManager.addUser(userId, name, email, null, null, address, phone, image);
                     syncBasicUserToFirestore(userId, name, email, address, phone, image);
                 })
-                .addOnFailureListener(e -> Log.e("FirebaseUsersSync", "Error sincronizando Firestore: " + e.getMessage()));
+                .addOnFailureListener(e -> Log.e("Userssync", "Error sincronizando Firestore: " + e.getMessage()));
     }
-
 }

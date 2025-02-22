@@ -1,19 +1,17 @@
 package com.example.romero_andresimdbappp.database;
+
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-/**
- * Clase que gestiona la base de datos unificada para usuarios y películas favoritas.
- */
 public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "favoritas_db";  // Base de datos existente
-    private static final int DATABASE_VERSION = 8;  // Ajusta la versión para reflejar cambios
+    private static final String DATABASE_NAME = "favoritas_db";
+    private static final int DATABASE_VERSION = 8;
 
     // Tabla USERS
     public static final String TABLE_USERS = "users";
-    public static final String COLUMN_USER_ID = "user_id";   // PRIMARY KEY
+    public static final String COLUMN_USER_ID = "user_id";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_EMAIL = "email";
     public static final String COLUMN_LOGIN_TIME = "login_time";
@@ -24,15 +22,13 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
 
     // Tabla FAVORITES
     public static final String TABLE_FAVORITES = "favorites";
-    public static final String COLUMN_ID = "id";  // ID de la película (PRIMARY KEY)
-    // Además, agregamos la columna user_id para la relación
-    public static final String COLUMN_FAV_USER_ID = "user_id";
+    public static final String COLUMN_ID = "id"; // id de la película
+    public static final String COLUMN_FAV_USER_ID = "user_id"; // FK a users(user_id)
     public static final String COLUMN_TITLE = "title";
     public static final String COLUMN_IMAGE_URL = "image_url";
     public static final String COLUMN_RELEASE_DATE = "release_date";
     public static final String COLUMN_RATING = "rating";
 
-    // SQL para crear la tabla users
     private static final String CREATE_TABLE_USERS =
             "CREATE TABLE " + TABLE_USERS + " (" +
                     COLUMN_USER_ID + " TEXT PRIMARY KEY, " +
@@ -45,8 +41,6 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_IMAGE + " TEXT" +
                     ");";
 
-    // SQL para crear la tabla favorites
-    // La PRIMARY KEY será el campo "id" (identificador de película) y se agrega la columna "user_id" como FK.
     private static final String CREATE_TABLE_FAVORITES =
             "CREATE TABLE " + TABLE_FAVORITES + " (" +
                     COLUMN_ID + " TEXT, " +
@@ -63,7 +57,6 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    // Crear ambas tablas
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_USERS);
@@ -72,7 +65,6 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // En versiones anteriores se eliminan y se recrean las tablas
         if (oldVersion < newVersion) {
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_FAVORITES);
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
@@ -82,8 +74,6 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_FAVORITES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
-        onCreate(db);
+        onUpgrade(db, oldVersion, newVersion);
     }
 }

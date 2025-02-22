@@ -1,4 +1,5 @@
 package com.example.romero_andresimdbappp.sync;
+
 import android.util.Log;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,28 +31,28 @@ public class Favoritassync {
                 .collection("movies")
                 .document(movie.getId())
                 .set(movieData)
-                .addOnSuccessListener(aVoid -> Log.d("FirebaseFavoritesSync", "Película agregada a Firestore."))
-                .addOnFailureListener(e -> Log.e("FirebaseFavoritesSync", "Error al agregar película: " + e.getMessage()));
+                .addOnSuccessListener(aVoid -> Log.d("Favoritassync", "Película agregada a Firestore."))
+                .addOnFailureListener(e -> Log.e("Favoritassync", "Error al agregar película: " + e.getMessage()));
     }
 
-    public void removeFavoriteFromFirestore(String movieId, String userEmail) {
+    public void removeFavoriteFromFirestore(String movieId, String userId) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
-        String userId = user.getUid();
+        String uid = user.getUid();
 
         db.collection("favorites")
-                .document(userId)
+                .document(uid)
                 .collection("movies")
                 .document(movieId)
                 .delete()
-                .addOnSuccessListener(aVoid -> Log.d("FirebaseFavoritesSync", "Película eliminada de Firestore."))
-                .addOnFailureListener(e -> Log.e("FirebaseFavoritesSync", "Error al eliminar película: " + e.getMessage()));
+                .addOnSuccessListener(aVoid -> Log.d("Favoritassync", "Película eliminada de Firestore."))
+                .addOnFailureListener(e -> Log.e("Favoritassync", "Error al eliminar película: " + e.getMessage()));
     }
 
     public void syncFavoritesWithLocalDatabase(FavoritesManager favoritesManager) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
-            Log.e("FirebaseFavoritesSync", "No hay usuario autenticado.");
+            Log.e("Favoritassync", "No hay usuario autenticado.");
             return;
         }
         String userId = user.getUid();
@@ -70,9 +71,10 @@ public class Favoritassync {
                         movie.setReleaseYear(doc.getString("releaseDate"));
                         movie.setRating(doc.getString("rating"));
 
+                        // Usa el email del usuario para insertar en la base de datos local
                         favoritesManager.addFavorite(movie, user.getEmail());
                     }
                 })
-                .addOnFailureListener(e -> Log.e("FirebaseFavoritesSync", "Error en sincronización: " + e.getMessage()));
+                .addOnFailureListener(e -> Log.e("Favoritassync", "Error en sincronización: " + e.getMessage()));
     }
 }

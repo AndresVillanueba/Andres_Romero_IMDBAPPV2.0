@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "1086900165591-vpoat2naml1kp20jqb3bm73s3kjq87fl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.romero_andresimdbappp",
+            "certificate_hash": "fef1450d765df2cf93288011f1fa298bf7050cb7"
+          }
+        },
+        {
           "client_id": "1086900165591-skrjliv70svn9i8kgb3d0l0d3k48bfd8.apps.googleusercontent.com",
           "client_type": 3
         }
