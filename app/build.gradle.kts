@@ -69,4 +69,7 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.11.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.11.0")
     implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
+    implementation ("com.google.android.libraries.places:places:2.6.0")
+    implementation ("com.hbb20:ccp:2.7.0")
+    implementation ("com.googlecode.libphonenumber:libphonenumber:8.13.14")
 }

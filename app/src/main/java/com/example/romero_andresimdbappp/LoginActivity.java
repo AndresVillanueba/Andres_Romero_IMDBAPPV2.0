@@ -178,6 +178,45 @@ public class LoginActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         FirebaseUser user = firebaseAuth.getCurrentUser();
                         if (user != null) {
+                            // --- AÑADIR O ACTUALIZAR BD LOCAL ---
+                            String userId = user.getUid();
+                            UsersDatabase usersDB = new UsersDatabase(this);
+
+                            // ¿Existe ya en local?
+                            boolean exists = usersDB.userExists(userId);
+                            if (!exists) {
+                                // Si no existe, lo creas:
+                                String loginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+                                usersDB.addUser(
+                                        userId,
+                                        user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
+                                        user.getEmail(),    // <--- Correo que ya tienes
+                                        loginTime,
+                                        null,
+                                        "",                 // address
+                                        "",                 // phone
+                                        ""                  // image
+                                );
+                            } else {
+                                // Si existe, podrías hacer un updateUser si quieres refrescar correo, login_time, etc.
+                                String loginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+                                usersDB.updateLoginTime(userId, loginTime);
+                                // Si quieres, updateUser con el email actual:
+                                usersDB.updateUser(
+                                        userId,
+                                        user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
+                                        user.getEmail(),
+                                        loginTime,
+                                        null,
+                                        null,
+                                        null,
+                                        null
+                                );
+                            }
+
+                            // --- FIN AÑADIR/ACTUALIZAR ---
+
+                            // Ir a MainActivity
                             navigateToMainActivity(user);
                         }
                     } else {
@@ -187,6 +226,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
+
 
     // ============ REGISTRO con email ============
     private void createUserWithEmailAndPassword(String email, String password) {

@@ -15,4 +15,8 @@
     <string name="fb_login_protocol_scheme">fb608688345087399</string>
     <string name="fb_client_id">cd1f21345f32d8f135c14a0a1fa67664</string>
     <string name="register_label">Registrar</string>
+    <string name="edit_user">Registrar Usuarios</string>
+    <string name="google_maps_key"> AIzaSyAER7D-uvYpBOG3wZjz9z3AeGulqAci-OU</string>
+    <string name="edit_address">Direccion</string>
+    <string name="map_preview_desc">Vista previa del mapa</string>
 </resources>

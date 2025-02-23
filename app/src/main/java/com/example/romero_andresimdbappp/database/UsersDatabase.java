@@ -1,26 +1,38 @@
 package com.example.romero_andresimdbappp.database;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+
+import com.example.romero_andresimdbappp.utils.KeyStoreManager; // <-- IMPORTANTE
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 /**
  * Clase que gestiona las operaciones CRUD sobre la tabla "users" en la base de datos.
  */
 public class UsersDatabase {
     private final FavoritesDatabaseHelper dbHelper;
+
     public UsersDatabase(Context context) {
         dbHelper = new FavoritesDatabaseHelper(context);
     }
+
     // Añade un nuevo usuario y lo sincroniza con Firestore
     public void addUser(String userId, String name, String email, String loginTime, String logoutTime,
                         String address, String phone, String image) {
+
+        // 1) Ciframos 'address' y 'phone' antes de guardarlos en la BD local
+        String encryptedAddress = KeyStoreManager.encryptData(address);
+        String encryptedPhone = KeyStoreManager.encryptData(phone);
+
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(FavoritesDatabaseHelper.COLUMN_USER_ID, userId);
@@ -28,25 +40,33 @@ public class UsersDatabase {
         values.put(FavoritesDatabaseHelper.COLUMN_EMAIL, email);
         values.put(FavoritesDatabaseHelper.COLUMN_LOGIN_TIME, loginTime);
         values.put(FavoritesDatabaseHelper.COLUMN_LOGOUT_TIME, logoutTime);
-        values.put(FavoritesDatabaseHelper.COLUMN_ADDRESS, address);
-        values.put(FavoritesDatabaseHelper.COLUMN_PHONE, phone);
+
+        // Guardamos cifrado en la base de datos
+        values.put(FavoritesDatabaseHelper.COLUMN_ADDRESS, encryptedAddress);
+        values.put(FavoritesDatabaseHelper.COLUMN_PHONE, encryptedPhone);
+
         values.put(FavoritesDatabaseHelper.COLUMN_IMAGE, image);
 
         db.insertWithOnConflict(FavoritesDatabaseHelper.TABLE_USERS, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         db.close();
 
-        // Sincroniza en Firestore
-        syncUserToFirestore(userId, name, email, address, phone, image);
+        // 2) Sincroniza en Firestore
+        // Si quieres guardar en Firestore también cifrado, usa encryptedAddress y encryptedPhone.
+        // Si prefieres verlo en claro en Firestore, usa address y phone.
+        syncUserToFirestore(userId, name, email, encryptedAddress, encryptedPhone, image);
     }
 
     // Actualiza la información de un usuario
     public void updateUser(String userId, String name, String email, String loginTime, String logoutTime,
                            String address, String phone, String image) {
+
+        // Obtenemos los datos actuales (descifrados) para no perder valores si alguno viene nulo
         Map<String, String> currentData = getUser(userId);
         if (currentData == null) {
             Log.e("UsersManager", "No se encontraron datos para el usuario: " + userId);
             return;
         }
+
         if (loginTime == null) {
             loginTime = currentData.get(FavoritesDatabaseHelper.COLUMN_LOGIN_TIME);
         }
@@ -54,11 +74,16 @@ public class UsersDatabase {
             logoutTime = currentData.get(FavoritesDatabaseHelper.COLUMN_LOGOUT_TIME);
         }
         if (address == null) {
+            // currentData.get(...) aquí ya está descifrado, porque getUser los descifra
             address = currentData.get(FavoritesDatabaseHelper.COLUMN_ADDRESS);
         }
         if (phone == null) {
             phone = currentData.get(FavoritesDatabaseHelper.COLUMN_PHONE);
         }
+
+        // 1) Ciframos 'address' y 'phone' antes de guardarlos de nuevo
+        String encryptedAddress = KeyStoreManager.encryptData(address);
+        String encryptedPhone = KeyStoreManager.encryptData(phone);
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -66,8 +91,11 @@ public class UsersDatabase {
         values.put(FavoritesDatabaseHelper.COLUMN_EMAIL, email);
         values.put(FavoritesDatabaseHelper.COLUMN_LOGIN_TIME, loginTime);
         values.put(FavoritesDatabaseHelper.COLUMN_LOGOUT_TIME, logoutTime);
-        values.put(FavoritesDatabaseHelper.COLUMN_ADDRESS, address);
-        values.put(FavoritesDatabaseHelper.COLUMN_PHONE, phone);
+
+        // Guardamos cifrados
+        values.put(FavoritesDatabaseHelper.COLUMN_ADDRESS, encryptedAddress);
+        values.put(FavoritesDatabaseHelper.COLUMN_PHONE, encryptedPhone);
+
         values.put(FavoritesDatabaseHelper.COLUMN_IMAGE, image);
 
         db.update(FavoritesDatabaseHelper.TABLE_USERS, values,
@@ -75,35 +103,49 @@ public class UsersDatabase {
                 new String[]{userId});
         db.close();
 
-        syncUserToFirestore(userId, name, email, address, phone, image);
+        // 2) Sincroniza con Firestore (decide si encriptado o en claro)
+        syncUserToFirestore(userId, name, email, encryptedAddress, encryptedPhone, image);
     }
 
-    // Recupera los datos de un usuario mediante su user_id
+    // Recupera los datos de un usuario mediante su user_id, DESCIFRANDO 'address' y 'phone'
     public Map<String, String> getUser(String userId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Map<String, String> userData = new HashMap<>();
+
         Cursor cursor = db.query(
                 FavoritesDatabaseHelper.TABLE_USERS,
                 null,
                 FavoritesDatabaseHelper.COLUMN_USER_ID + " = ?",
                 new String[]{userId},
                 null, null, null);
+
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                String[] columns = {
-                        FavoritesDatabaseHelper.COLUMN_USER_ID,
-                        FavoritesDatabaseHelper.COLUMN_NAME,
-                        FavoritesDatabaseHelper.COLUMN_EMAIL,
-                        FavoritesDatabaseHelper.COLUMN_LOGIN_TIME,
-                        FavoritesDatabaseHelper.COLUMN_LOGOUT_TIME,
-                        FavoritesDatabaseHelper.COLUMN_ADDRESS,
-                        FavoritesDatabaseHelper.COLUMN_PHONE,
-                        FavoritesDatabaseHelper.COLUMN_IMAGE
-                };
-                for (String column : columns) {
-                    int index = cursor.getColumnIndexOrThrow(column);
-                    userData.put(column, cursor.getString(index));
-                }
+                // Obtenemos las columnas
+                String encAddress = cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_ADDRESS));
+                String encPhone   = cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_PHONE));
+
+                // Desciframos
+                String decAddress = KeyStoreManager.decryptData(encAddress);
+                String decPhone   = KeyStoreManager.decryptData(encPhone);
+
+                userData.put(FavoritesDatabaseHelper.COLUMN_USER_ID,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_USER_ID)));
+                userData.put(FavoritesDatabaseHelper.COLUMN_NAME,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_NAME)));
+                userData.put(FavoritesDatabaseHelper.COLUMN_EMAIL,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_EMAIL)));
+                userData.put(FavoritesDatabaseHelper.COLUMN_LOGIN_TIME,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_LOGIN_TIME)));
+                userData.put(FavoritesDatabaseHelper.COLUMN_LOGOUT_TIME,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_LOGOUT_TIME)));
+
+                // Guardamos en el Map la versión DESCIFRADA
+                userData.put(FavoritesDatabaseHelper.COLUMN_ADDRESS, decAddress != null ? decAddress : "");
+                userData.put(FavoritesDatabaseHelper.COLUMN_PHONE, decPhone != null ? decPhone : "");
+
+                userData.put(FavoritesDatabaseHelper.COLUMN_IMAGE,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_IMAGE)));
             } else {
                 Log.e("UsersManager", "No se encontraron datos para el usuario con ID: " + userId);
             }
@@ -122,6 +164,7 @@ public class UsersDatabase {
                 FavoritesDatabaseHelper.COLUMN_USER_ID + " = ?",
                 new String[]{userId},
                 null, null, null);
+
         boolean exists = (cursor != null && cursor.moveToFirst());
         if (cursor != null) cursor.close();
         db.close();
@@ -156,8 +199,8 @@ public class UsersDatabase {
         Map<String, Object> userData = new HashMap<>();
         userData.put("name", name);
         userData.put("email", email);
-        userData.put("address", address);
-        userData.put("phone", phone);
+        userData.put("address", address); // Cifrado o plano, según prefieras
+        userData.put("phone", phone);     // Cifrado o plano, según prefieras
         userData.put("image", image);
 
         firestore.collection("users").document(userId)
@@ -178,22 +221,33 @@ public class UsersDatabase {
                 null,
                 null,
                 null);
+
         if (cursor != null) {
             while (cursor.moveToNext()) {
+                String encAddress = cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_ADDRESS));
+                String encPhone   = cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_PHONE));
+                String decAddress = KeyStoreManager.decryptData(encAddress);
+                String decPhone   = KeyStoreManager.decryptData(encPhone);
+
                 Map<String, String> user = new HashMap<>();
-                String[] columns = {
-                        FavoritesDatabaseHelper.COLUMN_USER_ID,
-                        FavoritesDatabaseHelper.COLUMN_NAME,
-                        FavoritesDatabaseHelper.COLUMN_EMAIL,
-                        FavoritesDatabaseHelper.COLUMN_LOGIN_TIME,
-                        FavoritesDatabaseHelper.COLUMN_LOGOUT_TIME,
-                        FavoritesDatabaseHelper.COLUMN_ADDRESS,
-                        FavoritesDatabaseHelper.COLUMN_PHONE,
-                        FavoritesDatabaseHelper.COLUMN_IMAGE
-                };
-                for (String column : columns) {
-                    user.put(column, cursor.getString(cursor.getColumnIndexOrThrow(column)));
-                }
+                user.put(FavoritesDatabaseHelper.COLUMN_USER_ID,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_USER_ID)));
+                user.put(FavoritesDatabaseHelper.COLUMN_NAME,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_NAME)));
+                user.put(FavoritesDatabaseHelper.COLUMN_EMAIL,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_EMAIL)));
+                user.put(FavoritesDatabaseHelper.COLUMN_LOGIN_TIME,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_LOGIN_TIME)));
+                user.put(FavoritesDatabaseHelper.COLUMN_LOGOUT_TIME,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_LOGOUT_TIME)));
+
+                // Guardamos descifrado
+                user.put(FavoritesDatabaseHelper.COLUMN_ADDRESS, decAddress != null ? decAddress : "");
+                user.put(FavoritesDatabaseHelper.COLUMN_PHONE, decPhone != null ? decPhone : "");
+
+                user.put(FavoritesDatabaseHelper.COLUMN_IMAGE,
+                        cursor.getString(cursor.getColumnIndexOrThrow(FavoritesDatabaseHelper.COLUMN_IMAGE)));
+
                 userList.add(user);
             }
             cursor.close();
