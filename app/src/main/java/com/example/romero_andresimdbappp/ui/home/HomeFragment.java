@@ -24,7 +24,7 @@ public class HomeFragment extends Fragment {
     private RecyclerView Recyclerview;
     private MovieAdapter Movieadapter;
     private boolean Controlarvistas = false; // Variable para controlar las llamadas
-    private static final String API_KEY = "c1cce6d145msh19937f212457748p163fd5jsnb262629a6f45";
+    private static final String API_KEY = "74c895ec50msh5642581f6a63ff0p1dd44fjsn0b0b34f8152a";
     private static final String API_HOST = "imdb-com.p.rapidapi.com";
 
     @Override

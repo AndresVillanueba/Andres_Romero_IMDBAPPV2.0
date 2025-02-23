@@ -63,7 +63,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"/>
 
-
         <!-- Activities de Facebook -->
         <activity
             android:name="com.facebook.FacebookActivity"
@@ -117,6 +116,7 @@
             android:exported="true"
             android:label="@string/edit_user"
             android:theme="@style/Theme.Romero_AndresIMDBAPPP" />
+
         <activity
             android:name=".AddressActivity"
             android:exported="true"
