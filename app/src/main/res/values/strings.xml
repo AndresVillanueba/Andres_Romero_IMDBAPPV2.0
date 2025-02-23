@@ -14,4 +14,5 @@
     <string name="facebook_app_id">608688345087399</string>
     <string name="fb_login_protocol_scheme">fb608688345087399</string>
     <string name="fb_client_id">cd1f21345f32d8f135c14a0a1fa67664</string>
+    <string name="register_label">Registrar</string>
 </resources>

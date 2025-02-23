@@ -45,43 +45,69 @@ public class Userssync {
 
     public void syncCurrentUserToFirestore() {
         if (currentUser == null) return;
-        String userId = currentUser.getUid();
-        String email = currentUser.getEmail();
-        String name = currentUser.getDisplayName();
-        String address = currentUser.getTenantId();
-        String phone = currentUser.getPhoneNumber();
-        Uri image = currentUser.getPhotoUrl();
-        if (email == null || name == null) return;
-        String loginTime = dateFormat.format(new Date());
 
-        db.collection("users").document(userId).get().addOnSuccessListener(documentSnapshot -> {
-            List<Map<String, Object>> activityLog = new ArrayList<>();
-            if (documentSnapshot.exists() && documentSnapshot.contains("activity_log")) {
-                activityLog = (List<Map<String, Object>>) documentSnapshot.get("activity_log");
-                for (Map<String, Object> entry : activityLog) {
-                    if (entry.get("login_time").equals(loginTime)) return;
-                }
-            }
-            Map<String, Object> newLog = new HashMap<>();
-            newLog.put("login_time", loginTime);
-            newLog.put("logout_time", null);
-            activityLog.add(newLog);
+        // Declaramos las variables como final o las asignamos de modo que no se reasignen luego
+        final String userId = currentUser.getUid();
+        final String email = currentUser.getEmail();
 
-            Map<String, Object> userData = new HashMap<>();
-            userData.put("user_id", userId);
-            userData.put("name", name);
-            userData.put("email", email);
-            userData.put("activity_log", activityLog);
-            userData.put("address", address);
-            userData.put("phone", phone);
-            userData.put("image", image);
+        // Si no hay email, salimos
+        if (email == null) return;
 
-            db.collection("users").document(userId)
-                    .set(userData)
-                    .addOnSuccessListener(aVoid -> Log.d("Userssync", "Usuario sincronizado."))
-                    .addOnFailureListener(e -> Log.e("Userssync", "Error al sincronizar usuario: " + e.getMessage()));
-        }).addOnFailureListener(e -> Log.e("Userssync", "Error al recuperar datos: " + e.getMessage()));
+        // Para el displayName
+        String tmpName = currentUser.getDisplayName();
+        if (tmpName == null || tmpName.isEmpty()) {
+            tmpName = "Usuario_" + userId.substring(0, 5);
+        }
+        final String name = tmpName; // name ahora es final y no se reasigna
+
+        final String address = currentUser.getTenantId();
+        final String phone = currentUser.getPhoneNumber();
+        final Uri image = currentUser.getPhotoUrl();
+
+        final String loginTime = dateFormat.format(new Date());
+
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    List<Map<String, Object>> activityLog = new ArrayList<>();
+                    if (documentSnapshot.exists() && documentSnapshot.contains("activity_log")) {
+                        activityLog = (List<Map<String, Object>>) documentSnapshot.get("activity_log");
+                        // Verificamos si ya existe un "login_time" igual (poco usual, pero sigues tu lógica)
+                        for (Map<String, Object> entry : activityLog) {
+                            if (entry.get("login_time").equals(loginTime)) return;
+                        }
+                    }
+
+                    // Agregamos el nuevo login
+                    Map<String, Object> newLog = new HashMap<>();
+                    newLog.put("login_time", loginTime);
+                    newLog.put("logout_time", null);
+                    activityLog.add(newLog);
+
+                    // Armamos el userData
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("user_id", userId);
+                    userData.put("name", name);
+                    userData.put("email", email);
+                    userData.put("activity_log", activityLog);
+                    userData.put("address", address);
+                    userData.put("phone", phone);
+                    userData.put("image", image);
+
+                    db.collection("users")
+                            .document(userId)
+                            .set(userData)
+                            .addOnSuccessListener(aVoid ->
+                                    Log.d("Userssync", "Usuario sincronizado.")
+                            )
+                            .addOnFailureListener(e ->
+                                    Log.e("Userssync", "Error al sincronizar usuario: " + e.getMessage())
+                            );
+                })
+                .addOnFailureListener(e -> Log.e("Userssync", "Error al recuperar datos: " + e.getMessage()));
     }
+
 
     public void updateLogoutTime() {
         if (currentUser == null) return;

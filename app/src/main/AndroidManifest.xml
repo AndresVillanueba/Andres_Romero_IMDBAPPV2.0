@@ -82,7 +82,6 @@
             android:name=".MovieListActivity"
             android:exported="true"
             android:label="Lista de películas" />
-
     </application>
 
     <queries>

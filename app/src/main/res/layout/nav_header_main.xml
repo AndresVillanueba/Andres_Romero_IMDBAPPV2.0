@@ -39,5 +39,6 @@
         android:layout_height="wrap_content"
         android:text="Logout"
         android:layout_marginTop="16dp"
-        android:visibility="gone" />
+        android:visibility="visible" />
+
 </LinearLayout>
