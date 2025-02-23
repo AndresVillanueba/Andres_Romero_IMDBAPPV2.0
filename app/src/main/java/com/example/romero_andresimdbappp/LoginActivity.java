@@ -1,11 +1,16 @@
 package com.example.romero_andresimdbappp;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.romero_andresimdbappp.database.UsersDatabase;
+import com.example.romero_andresimdbappp.sync.Userssync;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -34,10 +39,8 @@ public class LoginActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private CallbackManager callbackManager;
 
-    // Capturamos el resultado del intent de Google Sign-In
-    private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
+    private final ActivityResultLauncher<Intent> signInLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
                     try {
@@ -48,21 +51,19 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(this, "Error en Google Sign-In", Toast.LENGTH_SHORT).show();
                     }
                 }
-            }
-    );
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Inicializar el SDK de Facebook
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(getApplication());
         setContentView(R.layout.activity_login);
 
-        // Inicializar FirebaseAuth
         firebaseAuth = FirebaseAuth.getInstance();
-        // Si ya hay un usuario autenticado, ir directo a MainActivity
+
+        // Si ya hay usuario autenticado, va a MainActivity
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
         if (currentUser != null) {
             navigateToMainActivity(currentUser);
@@ -70,7 +71,7 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Configuración del botón de Google Sign-In
+        // Botón Google Sign-In
         SignInButton signInButton = findViewById(R.id.btnSign);
         signInButton.setSize(SignInButton.SIZE_WIDE);
         signInButton.setOnClickListener(v -> {
@@ -83,10 +84,10 @@ public class LoginActivity extends AppCompatActivity {
             signInLauncher.launch(signInIntent);
         });
 
-        // Configuración para Facebook Login
+        // Botón Facebook
         callbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = findViewById(R.id.btnFacebookLogin);
-        loginButton.setPermissions("public_profile");
+        loginButton.setPermissions("public_profile", "email");
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -106,46 +107,51 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    // Autenticar en Firebase con la cuenta de Google
     private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
         if (account == null) {
             Toast.makeText(this, "Cuenta de Google inválida", Toast.LENGTH_SHORT).show();
             return;
         }
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = firebaseAuth.getCurrentUser();
-                        navigateToMainActivity(user);
-                    } else {
-                        Log.w(TAG, "signInWithCredential(Google):failure", task.getException());
-                        Toast.makeText(this, "Error al autenticar con Google", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                navigateToMainActivity(user);
+            } else {
+                Log.w(TAG, "signInWithCredential(Google):failure", task.getException());
+                Toast.makeText(this, "Error al autenticar con Google", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    // Autenticar en Firebase con el token de Facebook
     private void handleFacebookAccessToken(AccessToken token) {
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = firebaseAuth.getCurrentUser();
-                        navigateToMainActivity(user);
-                    } else {
-                        Log.w(TAG, "signInWithCredential(Facebook):failure", task.getException());
-                        Toast.makeText(this, "Error al autenticar con Facebook", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                navigateToMainActivity(user);
+            } else {
+                Log.w(TAG, "signInWithCredential(Facebook):failure", task.getException());
+                Toast.makeText(this, "Error al autenticar con Facebook", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    // Redirigir a MainActivity
     private void navigateToMainActivity(FirebaseUser user) {
         if (user == null) {
             Toast.makeText(this, "Usuario no válido", Toast.LENGTH_SHORT).show();
             return;
         }
+        // Subimos la info de login a Firestore
+        Userssync usersSync = new Userssync();
+        usersSync.syncCurrentUserToFirestore();
+
+        // También sincronizamos el usuario con la BD local
+        // Para que aparezca en la tabla "users" del Database Inspector
+        UsersDatabase usersDB = new UsersDatabase(this);
+        usersSync.syncUsersWithFirestore(usersDB);
+
+        // Ir a MainActivity
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("USER_NAME", user.getDisplayName());
         intent.putExtra("USER_EMAIL", user.getEmail());

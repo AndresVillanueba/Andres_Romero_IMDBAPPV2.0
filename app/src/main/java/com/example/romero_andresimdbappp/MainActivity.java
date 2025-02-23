@@ -7,13 +7,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+
 import com.bumptech.glide.Glide;
 import com.example.romero_andresimdbappp.databinding.ActivityMainBinding;
+import com.example.romero_andresimdbappp.sync.Userssync;
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -24,11 +27,12 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private FirebaseAuth mAuth;
     private TextView navEmail, navInitial;
-    private ImageView navProfileImage; // Para la foto de perfil
+    private ImageView navProfileImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.appBarMain.toolbar);
@@ -41,14 +45,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Obtener el header del NavigationView
+        // Header del NavigationView
         View headerView = binding.navView.getHeaderView(0);
         navEmail = headerView.findViewById(R.id.nav_email);
         navInitial = headerView.findViewById(R.id.nav_header_initial);
         navProfileImage = headerView.findViewById(R.id.nav_profile_image);
         Button btnLogout = headerView.findViewById(R.id.btn_google_sign_out);
 
-        // Mostrar los datos del usuario
+        // Mostrar datos de usuario
         String email = currentUser.getEmail();
         String displayName = currentUser.getDisplayName();
         navEmail.setText(email != null ? email : "Sin email");
@@ -57,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             navInitial.setText("U");
         }
-        // Cargar la foto de perfil usando Glide si existe
         if (currentUser.getPhotoUrl() != null) {
             Glide.with(this)
                     .load(currentUser.getPhotoUrl())
@@ -67,13 +70,14 @@ public class MainActivity extends AppCompatActivity {
             navProfileImage.setImageResource(R.drawable.default_user_image);
         }
 
+        // Botón logout
         btnLogout.setVisibility(View.VISIBLE);
         btnLogout.setOnClickListener(v -> signOut());
 
-        // Configurar el Navigation Drawer
+        // Configuración Navigation Drawer
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
-                .setOpenableLayout(binding.drawerLayout)
+                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
+        ).setOpenableLayout(binding.drawerLayout)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
@@ -93,13 +97,15 @@ public class MainActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
-    // Método para cerrar sesión en Firebase, Google y Facebook
+    // Cerrar sesión (Firebase, Google, Facebook)
     public void signOut() {
+        // Registrar logout en Firestore
+        Userssync usersSync = new Userssync();
+        usersSync.updateLogoutTime();
+
         mAuth.signOut();
-        // Cierra sesión en Google
-        // mGoogleSignInClient.signOut() si ya tienes esa instancia configurada.
-        // Cierra sesión en Facebook
         LoginManager.getInstance().logOut();
+
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
