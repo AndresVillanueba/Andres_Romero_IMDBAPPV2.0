@@ -1,22 +1,19 @@
 package com.example.romero_andresimdbappp;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem; // Importante
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import androidx.annotation.NonNull; // Importante
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-
 import com.bumptech.glide.Glide;
 import com.example.romero_andresimdbappp.databinding.ActivityMainBinding;
 import com.example.romero_andresimdbappp.database.UsersDatabase;
@@ -24,7 +21,6 @@ import com.example.romero_andresimdbappp.sync.Userssync;
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;

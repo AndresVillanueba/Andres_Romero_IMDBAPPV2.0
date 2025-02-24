@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputType;
@@ -183,12 +184,29 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         btnGallery.setOnClickListener(v -> {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Android 13 o superior
+                if (checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES},
+                            REQUEST_STORAGE_PERMISSION);
+                } else {
+                    openGallery();
+                }
             } else {
-                openGallery();
+                // Android 12 o inferior
+                if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                } else {
+                    openGallery();
+                }
             }
         });
+
 
         btnUrl.setOnClickListener(v -> showUrlDialog());
 

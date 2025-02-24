@@ -12,12 +12,11 @@
     <!-- PERMISOS -->
     <!-- Cámara -->
     <uses-permission android:name="android.permission.CAMERA" />
-
     <!-- Lectura y escritura en almacenamiento (para Android < 10) -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="34" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <!-- Para contactos, SMS, etc. (si lo necesitas) -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
