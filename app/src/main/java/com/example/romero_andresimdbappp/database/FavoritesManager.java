@@ -1,4 +1,5 @@
 package com.example.romero_andresimdbappp.database;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -13,11 +14,13 @@ import java.util.List;
 
 public class FavoritesManager {
 
+    // En lugar de crear una nueva instancia, usa la instancia global
     private final FavoritesDatabaseHelper dbHelper;
     private final Favoritassync firebaseSync;
 
     public FavoritesManager(Context context) {
-        dbHelper = new FavoritesDatabaseHelper(context);
+        // Supongamos que has implementado MyApp con un método getDbHelper()
+        dbHelper = com.example.romero_andresimdbappp.utils.MyApp.getDbHelper();
         firebaseSync = new Favoritassync();
         firebaseSync.syncFavoritesWithLocalDatabase(this);
     }
@@ -40,7 +43,7 @@ public class FavoritesManager {
         values.put(FavoritesDatabaseHelper.COLUMN_RATING, movie.getRating());
 
         db.insertWithOnConflict(FavoritesDatabaseHelper.TABLE_FAVORITES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-        db.close();
+        // Ya no se cierra la base de datos aquí
 
         firebaseSync.addFavoriteToFirestore(movie, userId);
     }
@@ -57,7 +60,7 @@ public class FavoritesManager {
         int deletedRows = db.delete(FavoritesDatabaseHelper.TABLE_FAVORITES,
                 FavoritesDatabaseHelper.COLUMN_ID + "=? AND " + FavoritesDatabaseHelper.COLUMN_FAV_USER_ID + "=?",
                 new String[]{movieId, userId});
-        db.close();
+        // No cerrar la base de datos aquí
 
         if (deletedRows > 0) {
             Log.d("FavoritesManager", "Película eliminada localmente para el usuario: " + userId);
@@ -99,7 +102,7 @@ public class FavoritesManager {
             }
             cursor.close();
         }
-        db.close();
+        // Tampoco se cierra la base de datos aquí
         return favoriteMovies;
     }
 }
