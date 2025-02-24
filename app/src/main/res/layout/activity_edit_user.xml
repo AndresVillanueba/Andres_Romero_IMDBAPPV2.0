@@ -9,14 +9,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Nombre -->
         <EditText
             android:id="@+id/etName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nombre" />
 
-        <!-- Correo electrónico (SOLO LECTURA) -->
+
         <EditText
             android:id="@+id/etEmail"
             android:layout_width="match_parent"
@@ -26,14 +25,14 @@
             android:enabled="false"
             android:layout_marginBottom="8dp" />
 
-        <!-- CountryCodePicker (lib hbb20) -->
+
         <com.hbb20.CountryCodePicker
             android:id="@+id/ccp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp" />
 
-        <!-- Teléfono -->
+
         <EditText
             android:id="@+id/etPhone"
             android:layout_width="match_parent"
@@ -41,7 +40,7 @@
             android:hint="Teléfono"
             android:inputType="phone" />
 
-        <!-- Campo dirección -->
+
         <EditText
             android:id="@+id/etAddress"
             android:layout_width="match_parent"
@@ -49,7 +48,7 @@
             android:hint="Introduce dirección"
             android:layout_marginBottom="8dp" />
 
-        <!-- Botón para buscar la dirección en el mapa -->
+
         <Button
             android:id="@+id/btnPickAddress"
             android:layout_width="match_parent"
@@ -57,7 +56,7 @@
             android:text="BUSCAR DIRECCIÓN"
             android:layout_marginBottom="8dp" />
 
-        <!-- Imagen de perfil -->
+
         <ImageView
             android:id="@+id/ivProfileImage"
             android:layout_width="120dp"
@@ -66,7 +65,7 @@
             android:layout_gravity="center_horizontal"
             android:contentDescription="Profile Image" />
 
-        <!-- Botones: Cámara, Galería, URL -->
+
         <Button
             android:id="@+id/btnCamera"
             android:layout_width="match_parent"

@@ -1,5 +1,4 @@
 package com.example.romero_andresimdbappp.utils;
-
 import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentCallbacks2;
@@ -9,39 +8,33 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-
 import com.example.romero_andresimdbappp.database.UsersDatabase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 
-/**
- * Registra login_time y logout_time para cualquier usuario (Google o Facebook).
- */
 public class AppLifecycleManager implements Application.ActivityLifecycleCallbacks, ComponentCallbacks2 {
-
+    // Preferencias y tiempos
     private static final String PREF_NAME = "AppPrefs";
     private static final String PREF_IS_LOGGED_IN = "is_logged_in";
-    private static final long LOGOUT_DELAY = 3000; // Espera 3s en background antes de logout
-
+    private static final long LOGOUT_DELAY = 3000;
+    // Flags y contadores
     private boolean hasLoggedOut = false;
     private boolean hasLoggedIn = false;
     private boolean isActivityChangingConfigurations = false;
     private int activityReferences = 0;
     private boolean isAppClosed = false;
-
+    // Handler y runnable para logout diferido
     private final Handler logoutHandler = new Handler(Looper.getMainLooper());
     private final Runnable logoutRunnable = this::handleLogout;
-
+    // Formato de fecha/hora
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     private final Context context;
 
@@ -51,6 +44,7 @@ public class AppLifecycleManager implements Application.ActivityLifecycleCallbac
 
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+        // Chequea si había un logout pendiente
         if (!activity.isChangingConfigurations()) {
             checkForPendingLogout();
         }
@@ -58,9 +52,10 @@ public class AppLifecycleManager implements Application.ActivityLifecycleCallbac
 
     @Override
     public void onActivityResumed(Activity activity) {
+        // Cancela cualquier logout programado
         logoutHandler.removeCallbacks(logoutRunnable);
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        // Registra login si no se había hecho
         if (user != null && !hasLoggedIn) {
             logUserLogin();
         }
@@ -70,11 +65,13 @@ public class AppLifecycleManager implements Application.ActivityLifecycleCallbac
 
     @Override
     public void onActivityPaused(Activity activity) {
+        // Programa el logout si la app queda en segundo plano
         logoutHandler.postDelayed(logoutRunnable, LOGOUT_DELAY);
     }
 
     @Override
     public void onActivityStarted(Activity activity) {
+        // Incrementa contador de Activities en foreground
         if (!isActivityChangingConfigurations) {
             activityReferences++;
         }
@@ -82,6 +79,7 @@ public class AppLifecycleManager implements Application.ActivityLifecycleCallbac
 
     @Override
     public void onActivityStopped(Activity activity) {
+        // Decrementa contador y si ya no hay Activities, programa logout
         if (!isActivityChangingConfigurations) {
             activityReferences--;
             if (activityReferences == 0 && !isAppClosed) {
@@ -93,21 +91,20 @@ public class AppLifecycleManager implements Application.ActivityLifecycleCallbac
 
     @Override
     public void onActivityDestroyed(Activity activity) {
+        // Verifica si se destruye por cambio de config
         isActivityChangingConfigurations = activity.isChangingConfigurations();
     }
 
     @Override
-    public void onActivitySaveInstanceState(Activity activity, Bundle outState) { }
-
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
     @Override
-    public void onConfigurationChanged(Configuration newConfig) { }
-
+    public void onConfigurationChanged(Configuration newConfig) {}
     @Override
-    public void onLowMemory() { }
+    public void onLowMemory() {}
 
     @Override
     public void onTrimMemory(int level) {
-        // Si la UI queda oculta, intentamos logout
+        // Logout si la UI se oculta
         if (level == TRIM_MEMORY_UI_HIDDEN) {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             if (user != null) {
@@ -125,7 +122,6 @@ public class AppLifecycleManager implements Application.ActivityLifecycleCallbac
         }
         SharedPreferences sp = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         sp.edit().putBoolean(PREF_IS_LOGGED_IN, false).apply();
-
         hasLoggedOut = true;
         hasLoggedIn = false;
     }
@@ -137,7 +133,6 @@ public class AppLifecycleManager implements Application.ActivityLifecycleCallbac
             Map<String, Object> loginEntry = new HashMap<>();
             loginEntry.put("login_time", loginTime);
             loginEntry.put("logout_time", null);
-
             FirebaseFirestore.getInstance()
                     .collection("users")
                     .document(user.getUid())
@@ -152,7 +147,6 @@ public class AppLifecycleManager implements Application.ActivityLifecycleCallbac
     private void registerUserLogout(FirebaseUser user) {
         String logoutTime = dateFormat.format(new Date());
         UsersDatabase usersDB = new UsersDatabase(context);
-
         FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(user.getUid())

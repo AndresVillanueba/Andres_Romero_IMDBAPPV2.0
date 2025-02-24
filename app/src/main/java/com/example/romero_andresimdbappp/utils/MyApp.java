@@ -19,7 +19,6 @@ public class MyApp extends Application {
         }
         // Crea la instancia única del helper al iniciar la app
         dbHelper = new FavoritesDatabaseHelper(this);
-
         // Registra el AppLifecycleManager para recibir callbacks del ciclo de vida de las Activities
         AppLifecycleManager lifecycleManager = new AppLifecycleManager(this);
         registerActivityLifecycleCallbacks(lifecycleManager);

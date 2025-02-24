@@ -1,5 +1,4 @@
 package com.example.romero_andresimdbappp;
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -9,18 +8,15 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
 import java.util.List;
 import java.util.Locale;
 
@@ -30,18 +26,16 @@ public class AddressActivity extends AppCompatActivity implements OnMapReadyCall
     private EditText etAddressInput;
     private Button btnSearch, btnConfirm;
     private GoogleMap mMap;
-    private LatLng foundLatLng; // lat/lng resultante del geocoding
-    private String chosenAddress; // dirección final
+    private LatLng foundLatLng;
+    private String chosenAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_address);
-
         etAddressInput = findViewById(R.id.etAddressInput);
         btnSearch = findViewById(R.id.btnSearch);
         btnConfirm = findViewById(R.id.btnConfirm);
-
         // Fragmento del mapa
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
@@ -49,10 +43,9 @@ public class AddressActivity extends AppCompatActivity implements OnMapReadyCall
             mapFragment.getMapAsync(this);
         }
 
-        // (Opcional) Pedir permiso de localización si quisieras MyLocation
+        // Pedir permiso de localización si quisieras MyLocation
         checkLocationPermission();
-
-        // Al pulsar "BUSCAR DIRECCIÓN", hace geocoding y muestra marcador
+        // Al pulsar Buscar direccion, hace geocoding y muestra marcador
         btnSearch.setOnClickListener(v -> {
             String typedAddress = etAddressInput.getText().toString().trim();
             if (typedAddress.isEmpty()) {
@@ -62,7 +55,7 @@ public class AddressActivity extends AppCompatActivity implements OnMapReadyCall
             geocodeAddress(typedAddress);
         });
 
-        // Al pulsar "CONFIRMAR DIRECCIÓN", se devuelve la dirección a EditActivity
+        // Al pulsar confirmar direccion, se devuelve la dirección a EditActivity
         btnConfirm.setOnClickListener(v -> {
             Intent resultIntent = new Intent();
             // Devuelve la dirección
@@ -77,19 +70,15 @@ public class AddressActivity extends AppCompatActivity implements OnMapReadyCall
         });
     }
 
-    /**
-     * Cuando el mapa está listo
-     */
+    //Cuando el mapa está listo
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        // Opcional: habilitar controles de zoom
+        // Habilitar controles de zoom
         mMap.getUiSettings().setZoomControlsEnabled(true);
     }
 
-    /**
-     * Convierte la dirección en lat/lng con Geocoder y actualiza el mapa.
-     */
+    //Convierte la dirección en lat/lng con Geocoder y actualiza el mapa.
     private void geocodeAddress(String addressStr) {
         try {
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
@@ -101,10 +90,8 @@ public class AddressActivity extends AppCompatActivity implements OnMapReadyCall
                 double lat = address.getLatitude();
                 double lng = address.getLongitude();
                 foundLatLng = new LatLng(lat, lng);
-
                 // Toma la dirección completa que geocoder devolvió
                 chosenAddress = address.getAddressLine(0);
-
                 if (mMap != null) {
                     mMap.clear();
                     mMap.addMarker(new MarkerOptions()

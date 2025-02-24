@@ -6,8 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
-
-    <!-- Campo de texto para introducir o mostrar la dirección -->
     <EditText
         android:id="@+id/etAddressInput"
         android:layout_width="match_parent"
@@ -15,7 +13,6 @@
         android:hint="Introduce dirección"
         android:layout_marginBottom="8dp"/>
 
-    <!-- Botón para buscar la dirección en el mapa -->
     <Button
         android:id="@+id/btnSearch"
         android:layout_width="match_parent"
@@ -23,14 +20,13 @@
         android:text="BUSCAR DIRECCIÓN"
         android:layout_marginBottom="8dp"/>
 
-    <!-- Mapa (SupportMapFragment) -->
+
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="300dp" />
 
-    <!-- Botón para confirmar la dirección -->
     <Button
         android:id="@+id/btnConfirm"
         android:layout_width="match_parent"

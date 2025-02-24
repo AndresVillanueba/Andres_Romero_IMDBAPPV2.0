@@ -1,5 +1,4 @@
 package com.example.romero_andresimdbappp.sync;
-
 import android.util.Log;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -12,12 +11,14 @@ import com.example.romero_andresimdbappp.models.Movie;
 
 public class Favoritassync {
 
+    // Instancia de Firestore
     private final FirebaseFirestore db;
 
     public Favoritassync() {
         db = FirebaseFirestore.getInstance();
     }
 
+    // Añade una película favorita a Firestore
     public void addFavoriteToFirestore(Movie movie, String userId) {
         Map<String, Object> movieData = new HashMap<>();
         movieData.put("id", movie.getId());
@@ -25,7 +26,6 @@ public class Favoritassync {
         movieData.put("posterUrl", movie.getImageUrl());
         movieData.put("releaseDate", movie.getReleaseYear());
         movieData.put("rating", movie.getRating());
-
         db.collection("favorites")
                 .document(userId)
                 .collection("movies")
@@ -35,11 +35,11 @@ public class Favoritassync {
                 .addOnFailureListener(e -> Log.e("Favoritassync", "Error al agregar película: " + e.getMessage()));
     }
 
+    // Elimina una película favorita de Firestore
     public void removeFavoriteFromFirestore(String movieId, String userId) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
         String uid = user.getUid();
-
         db.collection("favorites")
                 .document(uid)
                 .collection("movies")
@@ -49,6 +49,7 @@ public class Favoritassync {
                 .addOnFailureListener(e -> Log.e("Favoritassync", "Error al eliminar película: " + e.getMessage()));
     }
 
+    // Descarga favoritos de Firestore y los guarda en la base local
     public void syncFavoritesWithLocalDatabase(FavoritesManager favoritesManager) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
@@ -56,7 +57,6 @@ public class Favoritassync {
             return;
         }
         String userId = user.getUid();
-
         db.collection("favorites")
                 .document(userId)
                 .collection("movies")
@@ -70,8 +70,6 @@ public class Favoritassync {
                         movie.setImageUrl(doc.getString("posterUrl"));
                         movie.setReleaseYear(doc.getString("releaseDate"));
                         movie.setRating(doc.getString("rating"));
-
-                        // Usa el email del usuario para insertar en la base de datos local
                         favoritesManager.addFavorite(movie, user.getEmail());
                     }
                 })

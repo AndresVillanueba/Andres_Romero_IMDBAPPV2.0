@@ -58,13 +58,9 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation(libs.gson)
     implementation(libs.picasso)
-
-    // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    // Firebase
     implementation("com.google.firebase:firebase-auth:21.1.0")
-    // Facebook SDK
     implementation("com.facebook.android:facebook-android-sdk:15.2.0")
     implementation ("com.github.bumptech.glide:glide:4.11.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.11.0")

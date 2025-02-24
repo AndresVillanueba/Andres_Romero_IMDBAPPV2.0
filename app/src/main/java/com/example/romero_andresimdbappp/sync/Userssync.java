@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class Userssync {
-
+    // Instancias de Firestore y usuario actual
     private final FirebaseFirestore db;
     private final FirebaseUser currentUser;
     private final SimpleDateFormat dateFormat;
@@ -26,7 +26,7 @@ public class Userssync {
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     }
-
+    // Sincroniza datos básicos del usuario con Firestore
     public void syncBasicUserToFirestore(String userId, String name, String email, String address, String phone, String image) {
         Map<String, Object> userData = new HashMap<>();
         userData.put("user_id", userId);
@@ -35,37 +35,27 @@ public class Userssync {
         userData.put("address", address);
         userData.put("phone", phone);
         userData.put("image", image);
-
         db.collection("users")
                 .document(userId)
                 .set(userData, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> Log.d("Userssync", "Usuario sincronizado con Firestore."))
                 .addOnFailureListener(e -> Log.e("Userssync", "Error al sincronizar usuario: " + e.getMessage()));
     }
-
+    // Agrega un nuevo login a activity_log en Firestore
     public void syncCurrentUserToFirestore() {
         if (currentUser == null) return;
-
-        // Declaramos las variables como final o las asignamos de modo que no se reasignen luego
         final String userId = currentUser.getUid();
         final String email = currentUser.getEmail();
-
-        // Si no hay email, salimos
         if (email == null) return;
-
-        // Para el displayName
         String tmpName = currentUser.getDisplayName();
         if (tmpName == null || tmpName.isEmpty()) {
             tmpName = "Usuario_" + userId.substring(0, 5);
         }
-        final String name = tmpName; // name ahora es final y no se reasigna
-
+        final String name = tmpName;
         final String address = currentUser.getTenantId();
         final String phone = currentUser.getPhoneNumber();
         final Uri image = currentUser.getPhotoUrl();
-
         final String loginTime = dateFormat.format(new Date());
-
         db.collection("users")
                 .document(userId)
                 .get()
@@ -73,19 +63,14 @@ public class Userssync {
                     List<Map<String, Object>> activityLog = new ArrayList<>();
                     if (documentSnapshot.exists() && documentSnapshot.contains("activity_log")) {
                         activityLog = (List<Map<String, Object>>) documentSnapshot.get("activity_log");
-                        // Verificamos si ya existe un "login_time" igual (poco usual, pero sigues tu lógica)
                         for (Map<String, Object> entry : activityLog) {
                             if (entry.get("login_time").equals(loginTime)) return;
                         }
                     }
-
-                    // Agregamos el nuevo login
                     Map<String, Object> newLog = new HashMap<>();
                     newLog.put("login_time", loginTime);
                     newLog.put("logout_time", null);
                     activityLog.add(newLog);
-
-                    // Armamos el userData
                     Map<String, Object> userData = new HashMap<>();
                     userData.put("user_id", userId);
                     userData.put("name", name);
@@ -94,26 +79,19 @@ public class Userssync {
                     userData.put("address", address);
                     userData.put("phone", phone);
                     userData.put("image", image);
-
                     db.collection("users")
                             .document(userId)
                             .set(userData)
-                            .addOnSuccessListener(aVoid ->
-                                    Log.d("Userssync", "Usuario sincronizado.")
-                            )
-                            .addOnFailureListener(e ->
-                                    Log.e("Userssync", "Error al sincronizar usuario: " + e.getMessage())
-                            );
+                            .addOnSuccessListener(aVoid -> Log.d("Userssync", "Usuario sincronizado."))
+                            .addOnFailureListener(e -> Log.e("Userssync", "Error al sincronizar usuario: " + e.getMessage()));
                 })
                 .addOnFailureListener(e -> Log.e("Userssync", "Error al recuperar datos: " + e.getMessage()));
     }
-
-
+    // Registra logout_time en activity_log
     public void updateLogoutTime() {
         if (currentUser == null) return;
         String userId = currentUser.getUid();
         String logoutTime = dateFormat.format(new Date());
-
         db.collection("users").document(userId).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists() && documentSnapshot.contains("activity_log")) {
                 List<Map<String, Object>> activityLog = (List<Map<String, Object>>) documentSnapshot.get("activity_log");
@@ -130,12 +108,11 @@ public class Userssync {
             }
         }).addOnFailureListener(e -> Log.e("Userssync", "Error al obtener historial: " + e.getMessage()));
     }
-
+    // Descarga usuario de Firestore y lo guarda en local
     public void syncUsersWithFirestore(UsersDatabase usersManager) {
         if (currentUser == null) return;
         String userId = currentUser.getUid();
         Map<String, String> localUser = usersManager.getUser(userId);
-
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     String name = documentSnapshot.exists() ? documentSnapshot.getString("name") : null;
@@ -155,9 +132,13 @@ public class Userssync {
                     }
                     String email = documentSnapshot.exists() ? documentSnapshot.getString("email") : currentUser.getEmail();
                     String address = documentSnapshot.exists() ? documentSnapshot.getString("address")
-                            : (localUser.containsKey(FavoritesDatabaseHelper.COLUMN_ADDRESS) ? localUser.get(FavoritesDatabaseHelper.COLUMN_ADDRESS) : "");
+                            : (localUser.containsKey(FavoritesDatabaseHelper.COLUMN_ADDRESS)
+                            ? localUser.get(FavoritesDatabaseHelper.COLUMN_ADDRESS)
+                            : "");
                     String phone = documentSnapshot.exists() ? documentSnapshot.getString("phone")
-                            : (localUser.containsKey(FavoritesDatabaseHelper.COLUMN_PHONE) ? localUser.get(FavoritesDatabaseHelper.COLUMN_PHONE) : "");
+                            : (localUser.containsKey(FavoritesDatabaseHelper.COLUMN_PHONE)
+                            ? localUser.get(FavoritesDatabaseHelper.COLUMN_PHONE)
+                            : "");
                     String image = documentSnapshot.exists() ? documentSnapshot.getString("image") : "";
                     if (image == null || image.isEmpty()) {
                         if (currentUser.getPhotoUrl() != null) {
@@ -166,7 +147,6 @@ public class Userssync {
                                     : currentUser.getPhotoUrl().toString();
                         }
                     }
-
                     usersManager.addUser(userId, name, email, null, null, address, phone, image);
                     syncBasicUserToFirestore(userId, name, email, address, phone, image);
                 })
