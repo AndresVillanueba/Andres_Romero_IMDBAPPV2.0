@@ -29,7 +29,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private TextView titulopelicula, resumenpelicula, calificacionpelicula, fechalanzamiento;
     private ImageView imagenpelicula;
     private Button btnSms;
-    private static final String API_CLAVE = "c1cce6d145msh19937f212457748p163fd5jsnb262629a6f45";
+    private static final String API_CLAVE = "74c895ec50msh5642581f6a63ff0p1dd44fjsn0b0b34f8152a";
     private static final String API_HOST = "imdb-com.p.rapidapi.com";
     private Movie pelicula;
     private final ActivityResultLauncher<String[]> lanzador =
