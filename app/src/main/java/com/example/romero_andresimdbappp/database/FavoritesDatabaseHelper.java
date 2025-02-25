@@ -1,14 +1,11 @@
 package com.example.romero_andresimdbappp.database;
-
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
-
     private static final String DATABASE_NAME = "favoritas_db";
     private static final int DATABASE_VERSION = 8;
-
     // Tabla USERS
     public static final String TABLE_USERS = "users";
     public static final String COLUMN_USER_ID = "user_id";
@@ -19,7 +16,6 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_ADDRESS = "address";
     public static final String COLUMN_PHONE = "phone";
     public static final String COLUMN_IMAGE = "image";
-
     // Tabla FAVORITES
     public static final String TABLE_FAVORITES = "favorites";
     public static final String COLUMN_ID = "id"; // id de la película

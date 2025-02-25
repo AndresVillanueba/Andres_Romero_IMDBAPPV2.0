@@ -1,5 +1,4 @@
 package com.example.romero_andresimdbappp.api;
-
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,7 @@ public class RapidApiKeyManager {
         Log.d("RapidApiKeyManager", "Cambiando a la siguiente API Key: " + apiKeys.get(currentIndex));
     }
 
-    // Verifica si todas las claves han sido agotadas (mejorado)
+    // Verifica si todas las claves han sido agotadas
     public boolean areAllKeysExhausted() {
         return currentIndex == apiKeys.size() - 1;
     }

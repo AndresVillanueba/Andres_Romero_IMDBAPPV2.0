@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.InputFilter;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.Button;
@@ -39,7 +38,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int REQUEST_CAMERA_PERMISSION = 100;
     private static final int REQUEST_STORAGE_PERMISSION = 101;
     private static final int REQUEST_LOCATION_PERMISSION = 300;
-    // Variables de UI
+    // Declaración y variables
     private EditText Name, Email, Phone, Address;
     private ImageView ivProfileImage;
     private Button btnCamera, btnGallery, btnUrl, btnAddress, btnSave;
@@ -50,6 +49,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
     private UsersDatabase usersDatabase;
     private Userssync usersSync;
     private GoogleMap mMap;
+
     // Lanzador para abrir la galería
     private final ActivityResultLauncher<Intent> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -61,6 +61,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 }
             });
+
     // Lanzador para la cámara
     private final ActivityResultLauncher<Intent> cameraLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -73,9 +74,9 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_user);
-        // Referencias a las vistas
+        //Referencias a las vistas de la interfaz
         Name = findViewById(R.id.etName);
-        Email = findViewById(R.id.etEmail);
+        Email = findViewById(R.id.etEmail); // Email del usuario
         Phone = findViewById(R.id.etPhone);
         Address = findViewById(R.id.etAddress);
         ivProfileImage = findViewById(R.id.ivProfileImage);
@@ -84,52 +85,56 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
         btnUrl = findViewById(R.id.btnUrl);
         btnAddress = findViewById(R.id.btnPickAddress);
         btnSave = findViewById(R.id.btnSave);
-        // Configura CountryCodePicker y regístralo en el EditText
+        //Configuramos el CountryCodePicker para el teléfono
         ccp = findViewById(R.id.ccp);
         ccp.registerCarrierNumberEditText(Phone);
-        // Establece el límite máximo de dígitos según el país seleccionado
-        setPhoneMaxLength();
-        // Si el usuario cambia de país, se actualiza el filtro
-        ccp.setOnCountryChangeListener(() -> setPhoneMaxLength());
-        // Inicializa la BD local y el sincronizador
+
+        //Inicializamos la base de datos local y el sincronizador
         usersDatabase = new UsersDatabase(this);
         usersSync = new Userssync();
-        // Verifica que haya un usuario logueado
+
+        //Verificamos que haya un usuario logueado
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
             finish();
             return;
         }
         userId = currentUser.getUid();
-        // Carga los datos actuales del usuario desde la BD local
+
+        //Cargamos los datos actuales del usuario desde la BD local
         currentUserData = usersDatabase.getUser(userId);
         if (currentUserData != null) {
             Log.d("EditActivity", "Datos usuario: " + currentUserData.toString());
-            Name.setText(currentUserData.containsKey("name") ? currentUserData.get("name") : "");
-            Email.setText(currentUserData.containsKey("email") ? currentUserData.get("email") : "");
-            Address.setText(currentUserData.containsKey("address") ? currentUserData.get("address") : "");
-            String phoneFull = currentUserData.containsKey("phone") ? currentUserData.get("phone") : "";
+            Name.setText(currentUserData.containsKey("name") && currentUserData.get("name") != null
+                    ? currentUserData.get("name") : "");
+            Email.setText(currentUserData.containsKey("email") && currentUserData.get("email") != null
+                    ? currentUserData.get("email") : "");
+            Address.setText(currentUserData.containsKey("address") && currentUserData.get("address") != null
+                    ? currentUserData.get("address") : "");
+            String phoneFull = currentUserData.containsKey("phone") && currentUserData.get("phone") != null
+                    ? currentUserData.get("phone") : "";
             if (!phoneFull.isEmpty()) {
                 ccp.setFullNumber(phoneFull);
             }
-            String imageStr = currentUserData.containsKey("image") ? currentUserData.get("image") : "";
+            String imageStr = currentUserData.containsKey("image") && currentUserData.get("image") != null
+                    ? currentUserData.get("image") : "";
             if (!imageStr.isEmpty()) {
                 imageUri = Uri.parse(imageStr);
                 Glide.with(this).load(imageStr).into(ivProfileImage);
             }
         }
 
-        // Configura el fragmento del mapa
+        //Configuramos el fragmento
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
 
-        // Verifica el permiso de localización
+        // Verificamos el permiso de localización
         checkLocationPermission();
 
-        // Listeners para los botones
+        // Configuramos los listeners de los botones
         btnCamera.setOnClickListener(v -> {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
@@ -137,27 +142,26 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
                 openCamera();
             }
         });
-
         btnGallery.setOnClickListener(v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 if (checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES)
                         != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_STORAGE_PERMISSION);
+                    requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES},
+                            REQUEST_STORAGE_PERMISSION);
                 } else {
                     openGallery();
                 }
             } else {
                 if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
+                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
                 } else {
                     openGallery();
                 }
             }
         });
-
         btnUrl.setOnClickListener(v -> showUrlDialog());
-
         final ActivityResultLauncher<Intent> addressSelectLauncher =
                 registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
@@ -167,44 +171,24 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                         double lat = result.getData().getDoubleExtra("LATITUDE", 0.0);
                         double lng = result.getData().getDoubleExtra("LONGITUDE", 0.0);
-                        // Puedes usar lat y lng si lo necesitas
+                        // Se pueden utilizar lat y lng si es necesario
                     }
                 });
         btnAddress.setOnClickListener(v -> {
             Intent intent = new Intent(EditActivity.this, AddressActivity.class);
             addressSelectLauncher.launch(intent);
         });
-
         btnSave.setOnClickListener(v -> saveData());
     }
 
-    // Método para limitar el número de dígitos en el EditText según el país seleccionado
-    private void setPhoneMaxLength() {
-        String countryCode = ccp.getSelectedCountryCode();
-        int maxLength;
-        switch (countryCode) {
-            case "1":      // EE.UU.
-                maxLength = 13;
-                break;
-            case "44":     // Reino Unido
-                maxLength = 13;
-                break;
-            case "34":     // España
-                maxLength = 12;
-                break;
-            default:
-                maxLength = 15;
-                break;
-        }
-        Phone.setFilters(new InputFilter[]{ new InputFilter.LengthFilter(maxLength) });
-    }
-
+    // Callback del mapa cuando está listo
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
     }
 
+    // Método para abrir la cámara y guardar la imagen
     private void openCamera() {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String fileName = "IMG_" + timeStamp + ".jpg";
@@ -218,11 +202,13 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
         cameraLauncher.launch(cameraIntent);
     }
 
+    // Método para abrir la galería
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         galleryLauncher.launch(intent);
     }
 
+    // Diálogo para introducir la URL de una imagen
     private void showUrlDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Introduce URL de imagen");
@@ -241,6 +227,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
         builder.show();
     }
 
+    // Guarda los datos actualizados del usuario
     private void saveData() {
         String newName = Name.getText().toString().trim();
         String newEmail = Email.getText().toString().trim();
@@ -276,6 +263,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
         finish();
     }
 
+    // Método para solicitar el permiso de localización
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -283,6 +271,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    // Gestión de los resultados de los permisos
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,

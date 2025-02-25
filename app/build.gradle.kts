@@ -68,4 +68,5 @@ dependencies {
     implementation ("com.google.android.libraries.places:places:2.6.0")
     implementation ("com.hbb20:ccp:2.7.0")
     implementation ("com.googlecode.libphonenumber:libphonenumber:8.13.14")
+    implementation ("com.google.android.gms:play-services-maps:18.1.0")
 }

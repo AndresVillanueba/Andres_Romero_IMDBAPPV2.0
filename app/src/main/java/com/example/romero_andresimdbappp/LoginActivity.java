@@ -3,6 +3,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -26,29 +27,32 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseNetworkException;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.FacebookAuthProvider;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 public class LoginActivity extends AppCompatActivity {
-    //Variables
     private static final String TAG = "LoginActivity";
     private FirebaseAuth firebaseAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private CallbackManager callbackManager;
     private EditText Email, Password;
     private Button btnEmailLogin, btnRegister;
+
+    // Lanzador para Google Sign-In
     private final ActivityResultLauncher<Intent> signInLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
                     try {
-                        // Recuperamos la cuenta de Google
                         GoogleSignInAccount account = task.getResult(ApiException.class);
                         firebaseAuthWithGoogle(account);
                     } catch (ApiException e) {
@@ -65,6 +69,7 @@ public class LoginActivity extends AppCompatActivity {
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(getApplication());
         setContentView(R.layout.activity_login);
+
         // Inicializamos FirebaseAuth
         firebaseAuth = FirebaseAuth.getInstance();
         // Si ya hay un usuario logueado, se redirige a MainActivity
@@ -74,23 +79,23 @@ public class LoginActivity extends AppCompatActivity {
             finish();
             return;
         }
-        // Referencias de la UI
+
+        // Referencias a la UI
         SignInButton signInButton = findViewById(R.id.btnSign);
         LoginButton loginButton = findViewById(R.id.btnFacebookLogin);
         Email = findViewById(R.id.etEmail);
         Password = findViewById(R.id.etPassword);
         btnEmailLogin = findViewById(R.id.btnEmailLogin);
         btnRegister = findViewById(R.id.btnRegister);
+
         // Configuración para Google
         signInButton.setSize(SignInButton.SIZE_WIDE);
         signInButton.setOnClickListener(v -> {
-            // Configuramos las opciones para Google
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestIdToken(getString(R.string.default_web_client_id))
                     .requestEmail()
                     .build();
             mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-            // Iniciamos el intent para Google Sign-In
             Intent signInIntent = mGoogleSignInClient.getSignInIntent();
             signInLauncher.launch(signInIntent);
         });
@@ -98,7 +103,6 @@ public class LoginActivity extends AppCompatActivity {
         // Configuración para Facebook
         callbackManager = CallbackManager.Factory.create();
         loginButton.setPermissions("public_profile", "email");
-        // Registramos el callback para manejar la respuesta de Facebook
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -115,10 +119,12 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        // Configuración del botón para iniciar sesión con Email y Password
+        // Iniciar sesión con email y contraseña
         btnEmailLogin.setOnClickListener(v -> {
             String email = Email.getText().toString().trim();
             String pass = Password.getText().toString().trim();
+
+            // Validaciones sencillas (que no estén vacíos)
             if (TextUtils.isEmpty(email) || TextUtils.isEmpty(pass)) {
                 Toast.makeText(LoginActivity.this, "Completa email y contraseña", Toast.LENGTH_SHORT).show();
             } else {
@@ -126,15 +132,39 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        // Configuración del botón para registrar usuario Email y Password
+        // Registrar usuario con email y password
         btnRegister.setOnClickListener(v -> {
             String email = Email.getText().toString().trim();
             String pass = Password.getText().toString().trim();
-            if (TextUtils.isEmpty(email) || TextUtils.isEmpty(pass)) {
-                Toast.makeText(LoginActivity.this, "Completa email y contraseña", Toast.LENGTH_SHORT).show();
-            } else {
-                createUserWithEmailAndPassword(email, pass);
+
+            // Validaciones explícitas:
+            if (TextUtils.isEmpty(email)) {
+                Toast.makeText(LoginActivity.this,
+                        "El correo está vacío. Ejemplo: usuario@dominio.com",
+                        Toast.LENGTH_SHORT).show();
+                return;
             }
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(LoginActivity.this,
+                        "Correo inválido. Ejemplo correcto: usuario@dominio.com",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (TextUtils.isEmpty(pass)) {
+                Toast.makeText(LoginActivity.this,
+                        "La contraseña está vacía. Debe tener al menos 6 caracteres.",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (pass.length() < 6) {
+                Toast.makeText(LoginActivity.this,
+                        "Contraseña inválida. Debe tener al menos 6 caracteres.",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Si todo OK, creamos el usuario
+            createUserWithEmailAndPassword(email, pass);
         });
     }
 
@@ -150,6 +180,7 @@ public class LoginActivity extends AppCompatActivity {
                             UsersDatabase usersDB = new UsersDatabase(this);
                             boolean exists = usersDB.userExists(userId);
                             String loginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+
                             if (!exists) {
                                 // Si el usuario no existe, se agrega
                                 usersDB.addUser(
@@ -180,9 +211,36 @@ public class LoginActivity extends AppCompatActivity {
                             navigateToMainActivity(user);
                         }
                     } else {
-                        Toast.makeText(this,
-                                "Error al iniciar sesión: " + task.getException().getMessage(),
-                                Toast.LENGTH_LONG).show();
+                        // [NUEVO] Manejo específico de excepciones para mostrar un mensaje personalizado
+                        Exception e = task.getException();
+                        if (e != null) {
+                            if (e instanceof FirebaseAuthInvalidCredentialsException) {
+                                // Contraseña incorrecta o email mal formado
+                                Toast.makeText(this,
+                                        "Correo o contraseña incorrectos.",
+                                        Toast.LENGTH_LONG).show();
+                            } else if (e instanceof FirebaseAuthInvalidUserException) {
+                                // Usuario no existe (borrado o desactivado)
+                                Toast.makeText(this,
+                                        "No existe una cuenta con este correo.",
+                                        Toast.LENGTH_LONG).show();
+                            } else if (e instanceof FirebaseNetworkException) {
+                                // Sin conexión a internet
+                                Toast.makeText(this,
+                                        "No hay conexión a internet.",
+                                        Toast.LENGTH_LONG).show();
+                            } else {
+                                // Otro error genérico
+                                Toast.makeText(this,
+                                        "Error al iniciar sesión: " + e.getMessage(),
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            // Sin excepción, pero la tarea falló
+                            Toast.makeText(this,
+                                    "Error desconocido al iniciar sesión.",
+                                    Toast.LENGTH_LONG).show();
+                        }
                     }
                 });
     }
@@ -195,7 +253,6 @@ public class LoginActivity extends AppCompatActivity {
                         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
                         if (firebaseUser != null) {
                             String userId = firebaseUser.getUid();
-                            // Asigna un nombre genérico al usuario
                             String name = "Usuario_" + userId.substring(0, 5);
                             String loginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
                             UsersDatabase usersDB = new UsersDatabase(this);
@@ -219,7 +276,7 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     } else {
                         Toast.makeText(this,
-                                "Error al registrar usuario: " + task.getException().getMessage(),
+                                "Error al registrar usuario: " + (task.getException() != null ? task.getException().getMessage() : ""),
                                 Toast.LENGTH_LONG).show();
                     }
                 });
@@ -236,7 +293,44 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = firebaseAuth.getCurrentUser();
-                        navigateToMainActivity(user);
+                        if (user != null) {
+                            //Actualizar o insertar en BD local
+                            String userId = user.getUid();
+                            UsersDatabase usersDB = new UsersDatabase(this);
+                            boolean exists = usersDB.userExists(userId);
+                            String loginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
+
+                            if (!exists) {
+                                // Si el usuario no existe, se agrega
+                                usersDB.addUser(
+                                        userId,
+                                        user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
+                                        user.getEmail(),
+                                        loginTime,
+                                        null,
+                                        "",  // address
+                                        "",  // phone
+                                        ""   // image
+                                );
+                            } else {
+                                // Si existe, actualizamos su login_time
+                                usersDB.updateLoginTime(userId, loginTime);
+                                // Opcional: actualizamos name/email en local
+                                usersDB.updateUser(
+                                        userId,
+                                        user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
+                                        user.getEmail(),
+                                        loginTime,
+                                        null,
+                                        null,
+                                        null,
+                                        null
+                                );
+                            }
+
+                            // Luego navegas a MainActivity
+                            navigateToMainActivity(user);
+                        }
                     } else {
                         Log.w(TAG, "signInWithCredential(Google):failure", task.getException());
                         Toast.makeText(this, "Error al autenticar con Google", Toast.LENGTH_SHORT).show();
@@ -244,7 +338,8 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    // Método para manejar el acceso con Facebook
+
+    // Manejo de token de Facebook
     private void handleFacebookAccessToken(AccessToken token) {
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
@@ -254,34 +349,32 @@ public class LoginActivity extends AppCompatActivity {
                     //Instanciamos UsersDatabase para registrar/actualizar datos
                     UsersDatabase usersDB = new UsersDatabase(this);
                     String userId = user.getUid();
-                    //Verificamos si ya existe en la tabla 'users'
                     boolean exists = usersDB.userExists(userId);
-                    //Obtenemos la hora de login
                     String loginTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
-                    //Si no existe, se agrega
                     if (!exists) {
                         usersDB.addUser(
                                 userId,
                                 user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
                                 user.getEmail(),
-                                loginTime,   // login_time
-                                null,        // logout_time
-                                "", "", ""   // address, phone, image
+                                loginTime,
+                                null,
+                                "",
+                                "",
+                                ""
                         );
                     } else {
-                        // Si sí existe, solo actualizamos login_time
                         usersDB.updateLoginTime(userId, loginTime);
                         usersDB.updateUser(
                                 userId,
                                 user.getDisplayName() != null ? user.getDisplayName() : "Usuario",
                                 user.getEmail(),
-                                loginTime,   // login_time
-                                null,        // logout_time
-                                null, null, null
+                                loginTime,
+                                null,
+                                null,
+                                null,
+                                null
                         );
                     }
-
-                    //Navegamos a MainActivity
                     navigateToMainActivity(user);
                 }
             } else {
@@ -290,7 +383,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-
 
     // Método para redirigir a MainActivity una vez autenticado el usuario
     private void navigateToMainActivity(FirebaseUser user) {
@@ -303,6 +395,7 @@ public class LoginActivity extends AppCompatActivity {
         usersSync.syncCurrentUserToFirestore();
         UsersDatabase usersDB = new UsersDatabase(this);
         usersSync.syncUsersWithFirestore(usersDB);
+
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("USER_NAME", user.getDisplayName());
         intent.putExtra("USER_EMAIL", user.getEmail());

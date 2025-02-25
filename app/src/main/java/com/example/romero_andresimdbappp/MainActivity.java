@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
     private FirebaseAuth mAuth;
+
     private TextView navEmail, navInitial;
     private ImageView navProfileImage;
     private UsersDatabase Usersdatabase;
@@ -38,10 +39,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Inflamos el binding
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.appBarMain.toolbar);
+
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Referencias nav header
+        // Referencias del header en el NavigationView
         View headerView = binding.navView.getHeaderView(0);
         if (headerView != null) {
             navEmail = headerView.findViewById(R.id.nav_email);
@@ -59,49 +61,34 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.e("MainActivity", "El headerView es nulo. Verifica que el NavigationView tenga un header definido.");
         }
+
         // Botón Logout en el header
         Button btnLogout = headerView.findViewById(R.id.btn_google_sign_out);
-        // Mostrar datos
-        String email = currentUser.getEmail();
-        String displayName = currentUser.getDisplayName();
-        navEmail.setText(email != null ? email : "Sin email");
-        if (displayName != null && !displayName.isEmpty()) {
-            navInitial.setText(String.valueOf(displayName.charAt(0)).toUpperCase());
-        } else {
-            navInitial.setText("U");
-        }
-
-        // Cargar imagen de perfil (FirebaseUser)
-        if (currentUser.getPhotoUrl() != null) {
-            Glide.with(this)
-                    .load(currentUser.getPhotoUrl())
-                    .placeholder(R.drawable.default_user_image)
-                    .into(navProfileImage);
-        } else {
-            navProfileImage.setImageResource(R.drawable.default_user_image);
-        }
-
-        // Inicializamos la BD local
-        Usersdatabase = new UsersDatabase(this);
-        // Configuración del botón de logout
         btnLogout.setVisibility(View.VISIBLE);
         btnLogout.setOnClickListener(v -> {
             // Actualizar logout_time en Firestore y en local
             Userssync usersSync = new Userssync();
             usersSync.updateLogoutTime();
+
             final String userId = currentUser.getUid();
             final String logoutTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
             new UsersDatabase(MainActivity.this).updateLogoutTime(userId, logoutTime);
+
             // Cerrar sesión en Firebase y Facebook
             FirebaseAuth.getInstance().signOut();
             LoginManager.getInstance().logOut();
+
             // Volver a LoginActivity
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         });
-        // Configuracion del navigation
+
+        // Inicializamos la BD local
+        Usersdatabase = new UsersDatabase(this);
+
+        // Config Nav
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_home,
                 R.id.nav_gallery,
@@ -117,12 +104,43 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        // Cargamos usuario actual de FirebaseAuth
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
+            // Obtenemos datos de la BD local
             Map<String, String> userData = Usersdatabase.getUser(userId);
             if (userData != null) {
-                // Actualiza la imagen de perfil, si la hay
+                // Recuperamos "name" guardado (lo que el usuario escribió en EditActivity)
+                String fullName = userData.get("name");
+                // Recuperamos el email de la BD local (o de Firebase, equivaldría)
+                String emailBD = userData.get("email");
+
+                // Lógica para mostrar un nombre provisional si no hay nada en BD
+                // Si fullName existe y no está vacío, lo mostramos
+                if (fullName != null && !fullName.isEmpty()) {
+                    navInitial.setText(fullName);
+                } else {
+                    // Si no hay un nombre, tomamos la parte antes de la '@' del email
+                    if (emailBD != null && !emailBD.isEmpty()) {
+                        int idxArroba = emailBD.indexOf("@");
+                        if (idxArroba > 0) {
+                            // Ej: andresjulian6a@gmail.com andresjulian6a
+                            navInitial.setText(emailBD.substring(0, idxArroba));
+                        } else {
+                            // Si no hay arroba, mostramos el email completo
+                            navInitial.setText(emailBD);
+                        }
+                    } else {
+                        // Si ni siquiera hay email, mostramos "Usuario"
+                        navInitial.setText("Usuario");
+                    }
+                }
+
+                // Mostramos email
+                navEmail.setText(emailBD != null && !emailBD.isEmpty() ? emailBD : "Sin email");
+                // Imagen de perfil
                 String imageStr = userData.get("image");
                 if (imageStr != null && !imageStr.isEmpty()) {
                     Glide.with(this)
@@ -130,24 +148,17 @@ public class MainActivity extends AppCompatActivity {
                             .placeholder(R.drawable.default_user_image)
                             .into(navProfileImage);
                 } else {
+                    // Si no hay imagen, placeholder
                     navProfileImage.setImageResource(R.drawable.default_user_image);
                 }
-                // Recupera y asigna el nombre completo
-                String fullName = userData.get("name");
-                if (fullName != null && !fullName.isEmpty()) {
-                    // Se asigna el nombre completo; si excede 15 caracteres, se truncará automáticamente
-                    navInitial.setText(fullName);
-                } else {
-                    navInitial.setText("Usuario");
-                }
-                // Actualiza también el email
-                String email = userData.get("email");
-                navEmail.setText(email != null ? email : "Sin email");
+            } else {
+                // Si userData es nulo (no hay en BD local), ponemos algo genérico
+                navInitial.setText("Usuario");
+                navEmail.setText("Sin email");
+                navProfileImage.setImageResource(R.drawable.default_user_image);
             }
         }
     }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

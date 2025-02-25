@@ -1,17 +1,14 @@
 package com.example.romero_andresimdbappp.database;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.example.romero_andresimdbappp.models.Movie;
 import com.example.romero_andresimdbappp.sync.Favoritassync;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -15,12 +15,10 @@
         android:scaleType="centerCrop"
         android:src="@drawable/default_user_image" />
 
-
     <TextView
         android:id="@+id/nav_user_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Usuario"
         android:textColor="@android:color/black"
         android:textSize="24sp"
         android:maxLength="15"
