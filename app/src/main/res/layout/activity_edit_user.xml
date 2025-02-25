@@ -1,7 +1,7 @@
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="16dp">
 
     <LinearLayout
@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nombre"
-            android:maxLength="15"/>
+            android:maxLength="10"/>
 
 
         <EditText
@@ -29,18 +29,32 @@
 
         <com.hbb20.CountryCodePicker
             android:id="@+id/ccp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp" />
+            android:layout_width="216dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="16dp"
+            app:ccp_showArrow="true"
+            app:ccp_showFlag="true"
+            app:ccp_showFullName="false"
+            app:ccp_showNameCode="false"
+            app:ccp_showPhoneCode="true"
+            app:layout_constraintEnd_toEndOf="@+id/editTextPhone"
+            app:layout_constraintStart_toStartOf="@+id/editTextPhone"
+            app:layout_constraintTop_toBottomOf="@+id/btnDireccion" />
 
 
         <EditText
             android:id="@+id/etPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Teléfono"
-            android:inputType="phone"/>
-
+            android:layout_marginTop="16dp"
+            android:ems="10"
+            android:hint="Teféfono"
+            android:inputType="phone"
+            android:maxLength="12"
+            app:layout_constraintEnd_toEndOf="@+id/btnDireccion"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@+id/btnDireccion"
+            app:layout_constraintTop_toBottomOf="@+id/countryCodePicker" />
 
         <EditText
             android:id="@+id/etAddress"

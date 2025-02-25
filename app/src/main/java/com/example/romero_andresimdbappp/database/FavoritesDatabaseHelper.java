@@ -18,8 +18,8 @@ public class FavoritesDatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_IMAGE = "image";
     // Tabla FAVORITES
     public static final String TABLE_FAVORITES = "favorites";
-    public static final String COLUMN_ID = "id"; // id de la película
-    public static final String COLUMN_FAV_USER_ID = "user_id"; // FK a users(user_id)
+    public static final String COLUMN_ID = "id";
+    public static final String COLUMN_FAV_USER_ID = "user_id";
     public static final String COLUMN_TITLE = "title";
     public static final String COLUMN_IMAGE_URL = "image_url";
     public static final String COLUMN_RELEASE_DATE = "release_date";
