@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         View headerView = binding.navView.getHeaderView(0);
         if (headerView != null) {
             navEmail = headerView.findViewById(R.id.nav_email);
-            navInitial = headerView.findViewById(R.id.nav_header_initial);
+            navInitial = headerView.findViewById(R.id.nav_user_name);
             navProfileImage = headerView.findViewById(R.id.nav_profile_image);
         } else {
             Log.e("MainActivity", "El headerView es nulo. Verifica que el NavigationView tenga un header definido.");
@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Inicializamos la BD local
         Usersdatabase = new UsersDatabase(this);
-
         // Configuración del botón de logout
         btnLogout.setVisibility(View.VISIBLE);
         btnLogout.setOnClickListener(v -> {
@@ -123,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
             String userId = currentUser.getUid();
             Map<String, String> userData = Usersdatabase.getUser(userId);
             if (userData != null) {
+                // Actualiza la imagen de perfil, si la hay
                 String imageStr = userData.get("image");
                 if (imageStr != null && !imageStr.isEmpty()) {
                     Glide.with(this)
@@ -132,9 +132,22 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     navProfileImage.setImageResource(R.drawable.default_user_image);
                 }
+                // Recupera y asigna el nombre completo
+                String fullName = userData.get("name");
+                if (fullName != null && !fullName.isEmpty()) {
+                    // Se asigna el nombre completo; si excede 15 caracteres, se truncará automáticamente
+                    navInitial.setText(fullName);
+                } else {
+                    navInitial.setText("Usuario");
+                }
+                // Actualiza también el email
+                String email = userData.get("email");
+                navEmail.setText(email != null ? email : "Sin email");
             }
         }
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -13,7 +13,8 @@
             android:id="@+id/etName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nombre" />
+            android:hint="Nombre"
+            android:maxLength="15"/>
 
 
         <EditText
@@ -38,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Teléfono"
-            android:inputType="phone" />
+            android:inputType="phone"/>
 
 
         <EditText
@@ -84,7 +85,6 @@
             android:layout_height="wrap_content"
             android:text="URL" />
 
-        <!-- Botón GUARDAR -->
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"

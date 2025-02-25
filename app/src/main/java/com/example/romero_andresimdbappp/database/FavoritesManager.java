@@ -5,27 +5,42 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.widget.Toast;
+
 import com.example.romero_andresimdbappp.models.Movie;
 import com.example.romero_andresimdbappp.sync.Favoritassync;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class FavoritesManager {
 
-    // En lugar de crear una nueva instancia, usa la instancia global
     private final FavoritesDatabaseHelper dbHelper;
     private final Favoritassync firebaseSync;
 
     public FavoritesManager(Context context) {
-        // Supongamos que has implementado MyApp con un método getDbHelper()
+        // Instancia única de dbHelper desde MyApp
         dbHelper = com.example.romero_andresimdbappp.utils.MyApp.getDbHelper();
         firebaseSync = new Favoritassync();
+        // Sincroniza favoritos con Firestore
         firebaseSync.syncFavoritesWithLocalDatabase(this);
     }
 
+    // Versión sin Context (usada desde Favoritassync)
     public void addFavorite(Movie movie, String email) {
+        // Llama internamente a la versión con Context, usando el global de MyApp
+        addFavorite(movie, email, com.example.romero_andresimdbappp.utils.MyApp.getAppContext(), false);
+    }
+
+    // Versión con Context
+    public void addFavorite(Movie movie, String email, Context context) {
+        addFavorite(movie, email, context, true);
+    }
+
+    // Lógica real de addFavorite, controlando si mostramos o no Toast
+    private void addFavorite(Movie movie, String email, Context context, boolean showToast) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
             Log.e("FavoritesManager", "No hay usuario autenticado.");
@@ -33,6 +48,17 @@ public class FavoritesManager {
         }
         String userId = currentUser.getUid();
 
+        // Verificamos si ya está en favoritos
+        if (isFavorite(movie.getId(), userId)) {
+            if (showToast) {
+                Toast.makeText(context,
+                        "¡" + movie.getTitle() + " ya se encuentra en favoritos!",
+                        Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
+        // Insertamos en la BD local
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(FavoritesDatabaseHelper.COLUMN_ID, movie.getId());
@@ -42,10 +68,34 @@ public class FavoritesManager {
         values.put(FavoritesDatabaseHelper.COLUMN_RELEASE_DATE, movie.getReleaseYear());
         values.put(FavoritesDatabaseHelper.COLUMN_RATING, movie.getRating());
 
-        db.insertWithOnConflict(FavoritesDatabaseHelper.TABLE_FAVORITES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-        // Ya no se cierra la base de datos aquí
+        db.insertWithOnConflict(FavoritesDatabaseHelper.TABLE_FAVORITES, null,
+                values, SQLiteDatabase.CONFLICT_IGNORE);
 
+        // Sincroniza con Firestore
         firebaseSync.addFavoriteToFirestore(movie, userId);
+
+        // Solo si showToast = true, mostrar el mensaje “Agregada…”
+        if (showToast) {
+            Toast.makeText(context,
+                    "Agregada a favoritos: " + movie.getTitle(),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Verifica si la película ya está en favoritos
+    private boolean isFavorite(String movieId, String userId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query(
+                FavoritesDatabaseHelper.TABLE_FAVORITES,
+                new String[]{FavoritesDatabaseHelper.COLUMN_ID},
+                FavoritesDatabaseHelper.COLUMN_ID + "=? AND " + FavoritesDatabaseHelper.COLUMN_FAV_USER_ID + "=?",
+                new String[]{movieId, userId},
+                null, null, null
+        );
+        boolean exists = (cursor != null && cursor.moveToFirst());
+        if (cursor != null) cursor.close();
+        db.close();
+        return exists;
     }
 
     public void removeFavorite(String movieId, String correoUsuario) {
@@ -57,11 +107,10 @@ public class FavoritesManager {
         String userId = currentUser.getUid();
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int deletedRows = db.delete(FavoritesDatabaseHelper.TABLE_FAVORITES,
+        int deletedRows = db.delete(
+                FavoritesDatabaseHelper.TABLE_FAVORITES,
                 FavoritesDatabaseHelper.COLUMN_ID + "=? AND " + FavoritesDatabaseHelper.COLUMN_FAV_USER_ID + "=?",
                 new String[]{movieId, userId});
-        // No cerrar la base de datos aquí
-
         if (deletedRows > 0) {
             Log.d("FavoritesManager", "Película eliminada localmente para el usuario: " + userId);
             firebaseSync.removeFavoriteFromFirestore(movieId, userId);
@@ -78,8 +127,10 @@ public class FavoritesManager {
             return favoriteMovies;
         }
         String userId = currentUser.getUid();
+
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(FavoritesDatabaseHelper.TABLE_FAVORITES,
+        Cursor cursor = db.query(
+                FavoritesDatabaseHelper.TABLE_FAVORITES,
                 new String[]{
                         FavoritesDatabaseHelper.COLUMN_ID,
                         FavoritesDatabaseHelper.COLUMN_TITLE,
@@ -90,6 +141,7 @@ public class FavoritesManager {
                 FavoritesDatabaseHelper.COLUMN_FAV_USER_ID + "=?",
                 new String[]{userId},
                 null, null, null);
+
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 Movie movie = new Movie();
@@ -102,7 +154,6 @@ public class FavoritesManager {
             }
             cursor.close();
         }
-        // Tampoco se cierra la base de datos aquí
         return favoriteMovies;
     }
 }

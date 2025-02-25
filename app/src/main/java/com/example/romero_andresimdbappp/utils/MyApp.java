@@ -1,6 +1,8 @@
 package com.example.romero_andresimdbappp.utils;
 
 import android.app.Application;
+import android.content.Context;
+
 import com.example.romero_andresimdbappp.R;
 import com.example.romero_andresimdbappp.database.FavoritesDatabaseHelper;
 import com.google.android.libraries.places.api.Places;
@@ -8,10 +10,11 @@ import com.google.android.libraries.places.api.Places;
 public class MyApp extends Application {
     // Instancia única del helper
     private static FavoritesDatabaseHelper dbHelper;
-
+    private static MyApp instance;
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         // Inicializa Places usando la API key definida en strings.xml
         String apiKey = getString(R.string.google_maps_key);
         if (!Places.isInitialized()) {
@@ -37,5 +40,8 @@ public class MyApp extends Application {
         if (dbHelper != null) {
             dbHelper.close();
         }
+    }
+    public static Context getAppContext() {
+        return instance.getApplicationContext();
     }
 }
