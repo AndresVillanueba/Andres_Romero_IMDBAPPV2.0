@@ -5,20 +5,17 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
-
 import com.example.romero_andresimdbappp.utils.KeyStoreManager;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Clase que gestiona las operaciones CRUD sobre la tabla 'users' en la base de datos local.
- * Ajustada para forzar "" en vez de null en campos como address, phone, etc.
- */
+//Clase que gestiona las operaciones CRUD sobre la tabla 'users' en la base de datos local.
+//Ajustada para forzar "" en vez de null en campos como address, phone, etc.
+
 public class UsersDatabase {
     private final FavoritesDatabaseHelper dbHelper;
 

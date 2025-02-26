@@ -23,8 +23,7 @@ import com.example.romero_andresimdbappp.models.MovieOverviewResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MovieDetailsActivity extends AppCompatActivity {
     private TextView titulopelicula, resumenpelicula, calificacionpelicula, fechalanzamiento;
     private ImageView imagenpelicula;

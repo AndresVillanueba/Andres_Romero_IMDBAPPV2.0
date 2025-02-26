@@ -104,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         // Cargamos usuario actual de FirebaseAuth
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {

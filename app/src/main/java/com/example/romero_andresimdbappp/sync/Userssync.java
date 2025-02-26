@@ -29,10 +29,9 @@ public class Userssync {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     }
 
-    /**
-     * Sincroniza datos básicos del usuario con Firestore.
-     * Ajustado para evitar valores null, convirtiéndolos a "".
-     */
+    //Sincroniza datos básicos del usuario con Firestore.
+     //Ajustado para evitar valores null, convirtiéndolos a "".
+
     public void syncBasicUserToFirestore(String userId, String name, String email,
                                          String address, String phone, String image) {
         // Forzar que no sean null
@@ -60,11 +59,10 @@ public class Userssync {
                         Log.e("Userssync", "Error al sincronizar usuario: " + e.getMessage()));
     }
 
-    /**
-     * Agrega un nuevo login a activity_log en Firestore.
-     * Ajustado para convertir phone, address, image en "" cuando sean null.
-     * Si el email es null, se asigna un placeholder.
-     */
+    //Agrega un nuevo login a activity_log en Firestore.
+    //Ajustado para convertir phone, address, image en "" cuando sean null.
+    //Si el email es null, se asigna un placeholder.
+
     public void syncCurrentUserToFirestore() {
         if (currentUser == null) return;
 
@@ -131,9 +129,7 @@ public class Userssync {
                         Log.e("Userssync", "Error al recuperar datos: " + e.getMessage()));
     }
 
-    /**
-     * Registra logout_time en activity_log.
-     */
+    //Registra logout_time en activity_log.
     public void updateLogoutTime() {
         if (currentUser == null) return;
         String userId = currentUser.getUid();
@@ -164,11 +160,10 @@ public class Userssync {
                         Log.e("Userssync", "Error al obtener historial: " + e.getMessage()));
     }
 
-    /**
-     * Descarga usuario de Firestore y lo guarda en local.
-     * También forzamos "" en lugar de null para address, phone, image.
-     * Si el email es null, se usa placeholder.
-     */
+    //Descarga usuario de Firestore y lo guarda en local.
+     //También forzamos "" en lugar de null para address, phone, image.
+     //Si el email es null, se usa placeholder.
+
     public void syncUsersWithFirestore(UsersDatabase usersManager) {
         if (currentUser == null) return;
         String userId = currentUser.getUid();

@@ -1,5 +1,4 @@
 package com.example.romero_andresimdbappp.models;
-
 import com.google.gson.annotations.SerializedName;
 
 // Clase para manejar la respuesta de la API sobre detalles de una película

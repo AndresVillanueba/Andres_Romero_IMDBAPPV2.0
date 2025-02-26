@@ -1,5 +1,4 @@
 package com.example.romero_andresimdbappp;
-
 import android.Manifest;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -23,7 +22,6 @@ import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.example.romero_andresimdbappp.database.UsersDatabase;
 import com.example.romero_andresimdbappp.sync.Userssync;
-import com.facebook.login.LoginManager;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -272,7 +270,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
                     case "US":
                         expectedLength = 10; // Estados Unidos: 10 dígitos
                         break;
-                    // Agrega más casos según las necesidades...
+                    // Agrega más casos según las necesidades
                     default:
                         // Si no se define, aceptamos el valor actual
                         expectedLength = numericPart.length();

@@ -7,16 +7,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.example.romero_andresimdbappp.MovieDetailsActivity;
 import com.example.romero_andresimdbappp.R;
 import com.example.romero_andresimdbappp.database.FavoritesManager;
 import com.example.romero_andresimdbappp.models.Movie;
 import com.google.firebase.auth.FirebaseAuth;
-
 import java.util.List;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.VistaPeliculas> {

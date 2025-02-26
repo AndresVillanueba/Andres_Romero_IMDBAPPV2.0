@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nombre"
-            android:maxLength="10"/>
+            android:maxLength="12"/>
 
 
         <EditText
@@ -50,7 +50,7 @@
             android:ems="10"
             android:hint="Teféfono"
             android:inputType="phone"
-            android:maxLength="12"
+            android:maxLength="15"
             app:layout_constraintEnd_toEndOf="@+id/btnDireccion"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="@+id/btnDireccion"
