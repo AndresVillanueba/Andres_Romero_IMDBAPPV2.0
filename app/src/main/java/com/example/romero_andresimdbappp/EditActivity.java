@@ -43,11 +43,11 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int REQUEST_LOCATION_PERMISSION = 300;
     // Declaración de variables
     private EditText Name, Email, Phone, Address;
-    private ImageView ivProfileImage;
+    private ImageView ProfileImage;
     private Button btnCamera, btnGallery, btnUrl, btnAddress, btnSave;
     private CountryCodePicker ccp;
     private Uri imageUri = null;
-    private Map<String, String> currentUserData;
+    private Map<String, String> UserData;
     private String userId;
     private UsersDatabase usersDatabase;
     private Userssync usersSync;
@@ -60,7 +60,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Uri selectedUri = result.getData().getData();
                     if (selectedUri != null) {
                         imageUri = selectedUri;
-                        Glide.with(this).load(imageUri).into(ivProfileImage);
+                        Glide.with(this).load(imageUri).into(ProfileImage);
                     }
                 }
             });
@@ -69,7 +69,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final ActivityResultLauncher<Intent> cameraLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && imageUri != null) {
-                    Glide.with(this).load(imageUri).into(ivProfileImage);
+                    Glide.with(this).load(imageUri).into(ProfileImage);
                 }
             });
 
@@ -83,7 +83,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
         Email = findViewById(R.id.etEmail);
         Phone = findViewById(R.id.etPhone);
         Address = findViewById(R.id.etAddress);
-        ivProfileImage = findViewById(R.id.ivProfileImage);
+        ProfileImage = findViewById(R.id.ivProfileImage);
         btnCamera = findViewById(R.id.btnCamera);
         btnGallery = findViewById(R.id.btnGallery);
         btnUrl = findViewById(R.id.btnUrl);
@@ -106,20 +106,20 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
         userId = currentUser.getUid();
 
         // Cargamos datos actuales del usuario desde la BD local
-        currentUserData = usersDatabase.getUser(userId);
-        if (currentUserData != null) {
-            Log.d("EditActivity", "Datos usuario: " + currentUserData.toString());
-            Name.setText(currentUserData.get("name") != null ? currentUserData.get("name") : "");
-            Email.setText(currentUserData.get("email") != null ? currentUserData.get("email") : "");
-            Address.setText(currentUserData.get("address") != null ? currentUserData.get("address") : "");
-            String phoneFull = currentUserData.get("phone") != null ? currentUserData.get("phone") : "";
+        UserData = usersDatabase.getUser(userId);
+        if (UserData != null) {
+            Log.d("EditActivity", "Datos usuario: " + UserData.toString());
+            Name.setText(UserData.get("name") != null ? UserData.get("name") : "");
+            Email.setText(UserData.get("email") != null ? UserData.get("email") : "");
+            Address.setText(UserData.get("address") != null ? UserData.get("address") : "");
+            String phoneFull = UserData.get("phone") != null ? UserData.get("phone") : "";
             if (!phoneFull.isEmpty()) {
                 ccp.setFullNumber(phoneFull);
             }
-            String imageStr = currentUserData.get("image") != null ? currentUserData.get("image") : "";
+            String imageStr = UserData.get("image") != null ? UserData.get("image") : "";
             if (!imageStr.isEmpty()) {
                 imageUri = Uri.parse(imageStr);
-                Glide.with(this).load(imageStr).into(ivProfileImage);
+                Glide.with(this).load(imageStr).into(ProfileImage);
             }
         }
 
@@ -216,7 +216,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
             String url = input.getText().toString().trim();
             if (!url.isEmpty()) {
                 imageUri = Uri.parse(url);
-                Glide.with(EditActivity.this).load(url).into(ivProfileImage);
+                Glide.with(EditActivity.this).load(url).into(ProfileImage);
             }
         });
         builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
@@ -242,7 +242,7 @@ public class EditActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Se limpia el número: elimina espacios extra
         String newPhoneFull = ccp.getFullNumberWithPlus().trim().replaceAll("\\s+", "");
         String newAddress = Address.getText().toString().trim();
-        String oldImage = (currentUserData != null) ? currentUserData.get("image") : "";
+        String oldImage = (UserData != null) ? UserData.get("image") : "";
         if (oldImage == null) oldImage = "";
         String newImage = (imageUri != null) ? imageUri.toString() : oldImage;
 

@@ -8,7 +8,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,7 +29,6 @@ public class Userssync {
     }
 
     //Sincroniza datos básicos del usuario con Firestore.
-     //Ajustado para evitar valores null, convirtiéndolos a "".
 
     public void syncBasicUserToFirestore(String userId, String name, String email,
                                          String address, String phone, String image) {

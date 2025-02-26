@@ -31,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
     private FirebaseAuth mAuth;
-
     private TextView navEmail, navInitial;
     private ImageView navProfileImage;
     private UsersDatabase Usersdatabase;

@@ -1,5 +1,4 @@
 package com.example.romero_andresimdbappp.database;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 //Clase que gestiona las operaciones CRUD sobre la tabla 'users' en la base de datos local.
-//Ajustada para forzar "" en vez de null en campos como address, phone, etc.
 
 public class UsersDatabase {
     private final FavoritesDatabaseHelper dbHelper;
@@ -122,7 +120,7 @@ public class UsersDatabase {
         syncUserToFirestore(userId, name, email, encryptedAddress, encryptedPhone, image, loginTime, logoutTime);
     }
 
-    // Recupera los datos de un usuario (descifrando address y phone)
+    // Recupera los datos de un usuario
     public Map<String, String> getUser(String userId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Map<String, String> userData = null;
@@ -226,9 +224,6 @@ public class UsersDatabase {
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        // address y phone vienen encriptados, pero no necesitas guardarlos en Firestore encriptados
-        // Si prefieres guardarlos sin encriptar, deberías descifrarlos antes. Aquí se asume que
-        // se guardan en Firestore “tal cual” se guardó en la DB local.
         Map<String, Object> userData = new HashMap<>();
         userData.put("name", name != null ? name : "");
         userData.put("email", email != null ? email : "");
@@ -247,7 +242,7 @@ public class UsersDatabase {
                         Log.e("UsersManager", "Error al sincronizar usuario en Firestore", e));
     }
 
-    // Para listar todos los usuarios (ejemplo)
+    // Para listar todos los usuarios
     public List<Map<String, String>> getAllUsers() {
         List<Map<String, String>> userList = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();

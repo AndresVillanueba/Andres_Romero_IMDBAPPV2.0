@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private CallbackManager callbackManager;
-    private EditText etEmail, etPassword;
+    private EditText Email, Password;
     private Button btnEmailLogin, btnRegister;
 
     // Lanzador para Google Sign-In
@@ -83,8 +83,8 @@ public class LoginActivity extends AppCompatActivity {
         // Referencias de la UI
         SignInButton btnGoogleSignIn = findViewById(R.id.btnSign);
         LoginButton btnFacebookLogin = findViewById(R.id.btnFacebookLogin);
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
+        Email = findViewById(R.id.etEmail);
+        Password = findViewById(R.id.etPassword);
         btnEmailLogin = findViewById(R.id.btnEmailLogin);
         btnRegister = findViewById(R.id.btnRegister);
 
@@ -121,8 +121,8 @@ public class LoginActivity extends AppCompatActivity {
 
         // Login con email y contraseña
         btnEmailLogin.setOnClickListener(v -> {
-            String email = etEmail.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
+            String email = Email.getText().toString().trim();
+            String password = Password.getText().toString().trim();
             if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
                 Toast.makeText(LoginActivity.this, "Completa email y contraseña", Toast.LENGTH_SHORT).show();
             } else {
@@ -132,8 +132,8 @@ public class LoginActivity extends AppCompatActivity {
 
         // Registro de usuario con email y contraseña
         btnRegister.setOnClickListener(v -> {
-            String email = etEmail.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
+            String email = Email.getText().toString().trim();
+            String password = Password.getText().toString().trim();
             if (TextUtils.isEmpty(email)) {
                 Toast.makeText(LoginActivity.this, "El correo está vacío. Ejemplo: usuario@dominio.com", Toast.LENGTH_SHORT).show();
                 return;

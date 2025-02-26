@@ -29,7 +29,7 @@ public class KeyStoreManager {
                     KeyProperties.BLOCK_MODE_GCM + "/" +
                     KeyProperties.ENCRYPTION_PADDING_NONE;
 
-    //Método principal para cifrar un texto cualquiera (String).
+    //Método principal para cifrar un texto cualquiera.
     // Devuelve la cadena codificada en Base64 que incluye el IV y el texto cifrado.
     public static String encryptData(String plainText) {
         if (plainText == null || plainText.isEmpty()) {
@@ -59,7 +59,7 @@ public class KeyStoreManager {
         }
     }
 
-    // Método para descifrar un String en Base64 que contenga [IV + Texto cifrado].
+    // Método para descifrar un String en Base64 que contenga.
     public static String decryptData(String encryptedBase64) {
         if (encryptedBase64 == null || encryptedBase64.isEmpty()) {
             return null;
